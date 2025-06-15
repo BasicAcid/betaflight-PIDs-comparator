@@ -12,57 +12,18 @@
             padding: 20px;
             background-color: #f5f5f5;
         }
-        
-        function showPresetOptions(side, presetKey) {
-            const preset = parser.presets[presetKey];
-            const optionsDiv = document.getElementById(`presetOptions${side}`);
-            const optionsListDiv = document.getElementById(`optionsList${side}`);
-            
-            if (!preset || !preset.options || preset.options.length === 0) {
-                hidePresetOptions(side);
-                return;
-            }
-            
-            // Build options HTML
-            let html = '';
-            preset.options.forEach((option, index) => {
-                const optionId = `option_${side}_${index}`;
-                const settingsPreview = Object.entries(option.settings).slice(0, 3).map(([key, value]) => 
-                    `${key} = ${value}`
-                ).join(', ');
-                const moreSettings = Object.keys(option.settings).length > 3 ? ` (+${Object.keys(option.settings).length - 3} more)` : '';
-                
-                html += `
-                    <div class="option-item">
-                        <label>
-                            <input type="checkbox" class="option-checkbox" id="${optionId}" ${option.checked ? 'checked' : ''}>
-                            <span class="option-label">${option.name}</span>
-                        </label>
-                        <div class="option-settings">${settingsPreview}${moreSettings}</div>
-                    </div>
-                `;
-            });
-            
-            optionsListDiv.innerHTML = html;
-            optionsDiv.style.display = 'block';
-        }
-        
-        function hidePresetOptions(side) {
-            const optionsDiv = document.getElementById(`presetOptions${side}`);
-            optionsDiv.style.display = 'none';
-        }
-        
+
         .container {
             background: white;
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        
+
         .input-section {
             margin-bottom: 30px;
         }
-        
+
         .cli-input {
             width: 100%;
             height: 200px;
@@ -73,7 +34,7 @@
             padding: 10px;
             resize: vertical;
         }
-        
+
         .parse-button {
             background: #007acc;
             color: white;
@@ -84,21 +45,21 @@
             font-size: 14px;
             margin-top: 10px;
         }
-        
+
         .parse-button:hover {
             background: #005a9e;
         }
-        
+
         .results-section {
             margin-top: 20px;
         }
-        
+
         .category {
             margin-bottom: 20px;
             border: 1px solid #ddd;
             border-radius: 4px;
         }
-        
+
         .category-header {
             background: #f8f9fa;
             padding: 10px 15px;
@@ -107,11 +68,11 @@
             cursor: pointer;
             user-select: none;
         }
-        
+
         .category-content {
             padding: 15px;
         }
-        
+
         .setting-item {
             display: flex;
             justify-content: space-between;
@@ -119,47 +80,47 @@
             padding: 5px 0;
             border-bottom: 1px solid #eee;
         }
-        
+
         .setting-item:last-child {
             border-bottom: none;
         }
-        
+
         .setting-name {
             font-family: 'Courier New', monospace;
             font-weight: bold;
             color: #d63384;
         }
-        
+
         .setting-value {
             font-family: 'Courier New', monospace;
             color: #198754;
         }
-        
+
         .stats {
             background: #e3f2fd;
             padding: 15px;
             border-radius: 4px;
             margin-bottom: 20px;
         }
-        
+
         .collapsed .category-content {
             display: none;
         }
-        
+
         .preset-section {
             background: #f8f9fa;
             padding: 20px;
             border-radius: 4px;
             margin-bottom: 20px;
         }
-        
+
         .preset-controls {
             display: flex;
             gap: 10px;
             align-items: center;
             margin-bottom: 15px;
         }
-        
+
         .preset-select {
             flex: 1;
             padding: 8px;
@@ -168,7 +129,7 @@
             font-size: 14px;
             max-height: 200px;
         }
-        
+
         .preset-options {
             margin: 15px 0;
             padding: 15px;
@@ -176,13 +137,13 @@
             border-radius: 4px;
             background: #f8f9fa;
         }
-        
+
         .preset-options h5 {
             margin-top: 0;
             margin-bottom: 10px;
             color: #495057;
         }
-        
+
         .option-item {
             margin: 8px 0;
             padding: 8px;
@@ -190,28 +151,28 @@
             border-radius: 4px;
             background: white;
         }
-        
+
         .option-checkbox {
             margin-right: 8px;
         }
-        
+
         .option-label {
             font-weight: 500;
             color: #495057;
         }
-        
+
         .option-settings {
             margin-top: 5px;
             font-size: 12px;
             color: #6c757d;
             font-family: 'Courier New', monospace;
         }
-        
+
         .preset-controls button:disabled {
             background: #ccc;
             cursor: not-allowed;
         }
-        
+
         .diff-item {
             display: flex;
             justify-content: space-between;
@@ -221,35 +182,35 @@
             border-radius: 4px;
             font-family: 'Courier New', monospace;
         }
-        
+
         .diff-changed {
             background: #fff3cd;
             border-left: 4px solid #ffc107;
         }
-        
+
         .diff-new {
             background: #d1ecf1;
             border-left: 4px solid #17a2b8;
         }
-        
+
         .diff-unchanged {
             background: #f8f9fa;
             color: #6c757d;
         }
-        
+
         .diff-value {
             font-weight: bold;
         }
-        
+
         .diff-old {
             color: #dc3545;
         }
-        
+
         .diff-new-value {
             color: #28a745;
             font-weight: bold;
         }
-        
+
         .preset-info {
             background: #e9ecef;
             padding: 10px;
@@ -257,37 +218,37 @@
             margin-bottom: 15px;
             font-size: 14px;
         }
-        
+
         .preset-title {
             font-weight: bold;
             color: #495057;
         }
-        
+
         .preset-description {
             margin-top: 5px;
             color: #6c757d;
         }
-        
+
         .loading-status {
             color: #6c757d;
             font-style: italic;
         }
-        
+
         .preset-controls button {
             min-width: 80px;
         }
-        
+
         .compare-tabs {
             display: flex;
             gap: 20px;
             align-items: flex-start;
         }
-        
+
         .compare-side {
             flex: 1;
             min-width: 0;
         }
-        
+
         .compare-middle {
             display: flex;
             flex-direction: column;
@@ -296,42 +257,42 @@
             padding: 20px 15px;
             min-width: 120px;
         }
-        
+
         .vs-section {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 15px;
         }
-        
+
         .vs-label {
             font-size: 24px;
             font-weight: bold;
             color: #007acc;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
-        
+
         .compare-button {
             background: #28a745 !important;
             font-weight: bold;
             padding: 12px 16px;
             white-space: nowrap;
         }
-        
+
         .compare-button:hover:not(:disabled) {
             background: #218838 !important;
         }
-        
+
         .compare-button:disabled {
             background: #ccc !important;
         }
-        
+
         .input-method-tabs {
             display: flex;
             margin-bottom: 10px;
             border-bottom: 2px solid #ddd;
         }
-        
+
         .tab-button {
             background: none;
             border: none;
@@ -342,45 +303,45 @@
             color: #666;
             transition: all 0.2s;
         }
-        
+
         .tab-button.active {
             color: #007acc;
             border-bottom-color: #007acc;
             font-weight: bold;
         }
-        
+
         .tab-button:hover {
             background: #f8f9fa;
         }
-        
+
         .input-method {
             display: none;
             margin-top: 15px;
         }
-        
+
         .input-method.active {
             display: block;
         }
-        
+
         .config-status {
             margin-top: 15px;
             padding: 10px;
             border-radius: 4px;
             font-size: 14px;
         }
-        
+
         .config-loaded {
             background: #d4edda;
             border: 1px solid #c3e6cb;
             color: #155724;
         }
-        
+
         .config-error {
             background: #f8d7da;
             border: 1px solid #f5c6cb;
             color: #721c24;
         }
-        
+
         .loading-status {
             text-align: center;
             padding: 10px;
@@ -390,39 +351,39 @@
             font-style: italic;
             color: #6c757d;
         }
-        
+
         @media (max-width: 768px) {
             .compare-tabs {
                 flex-direction: column;
             }
-            
+
             .compare-middle {
                 order: 3;
                 padding: 15px 0;
             }
-            
+
             .vs-section {
                 flex-direction: row;
                 gap: 10px;
             }
         }
-        
+
         .individual-configs {
             margin-top: 30px;
         }
-        
+
         .config-details {
             display: flex;
             gap: 20px;
         }
-        
+
         .config-detail {
             flex: 1;
             border: 1px solid #ddd;
             border-radius: 4px;
             padding: 15px;
         }
-        
+
         .config-detail h4 {
             margin-top: 0;
             margin-bottom: 15px;
@@ -430,7 +391,7 @@
             border-bottom: 1px solid #dee2e6;
             padding-bottom: 8px;
         }
-        
+
         @media (max-width: 768px) {
             .config-details {
                 flex-direction: column;
@@ -441,10 +402,10 @@
 <body>
     <div class="container">
         <h1>Betaflight PID Tune Comparator</h1>
-        
+
         <div class="input-section">
             <h3>Load Configurations to Compare</h3>
-            
+
             <div class="compare-tabs">
                 <div class="compare-side">
                     <h4>Configuration A</h4>
@@ -452,7 +413,7 @@
                         <button class="tab-button active" onclick="switchInputMethod('A', 'text')">📝 CLI Text</button>
                         <button class="tab-button" onclick="switchInputMethod('A', 'preset')">🎯 PID Tune</button>
                     </div>
-                    
+
                     <div id="inputMethodA-text" class="input-method active">
                         <textarea class="cli-input" id="cliInputA" placeholder="Paste your CLI export here...
 
@@ -465,7 +426,7 @@ set i_pitch = 52
 ..."></textarea>
                         <button class="parse-button" onclick="loadConfigFromText('A')">Load Config A</button>
                     </div>
-                    
+
                     <div id="inputMethodA-preset" class="input-method">
                         <select id="presetSelectA" class="preset-select" size="8">
                             <option value="">Loading PID tunes...</option>
@@ -474,12 +435,11 @@ set i_pitch = 52
                             <h5>Preset Options:</h5>
                             <div id="optionsListA"></div>
                         </div>
-                        <button class="parse-button" onclick="loadConfigFromPreset('A')" id="loadPresetA" disabled>Load Tune A</button>
                     </div>
-                    
+
                     <div id="configStatusA" class="config-status" style="display: none;"></div>
                 </div>
-                
+
                 <div class="compare-middle">
                     <div class="vs-section">
                         <div class="vs-label">VS</div>
@@ -489,19 +449,19 @@ set i_pitch = 52
                         <button class="parse-button" onclick="clearAll()" id="clearAllBtn">🗑️ Clear All</button>
                     </div>
                 </div>
-                
+
                 <div class="compare-side">
                     <h4>Configuration B</h4>
                     <div class="input-method-tabs">
                         <button class="tab-button active" onclick="switchInputMethod('B', 'text')">📝 CLI Text</button>
                         <button class="tab-button" onclick="switchInputMethod('B', 'preset')">🎯 PID Tune</button>
                     </div>
-                    
+
                     <div id="inputMethodB-text" class="input-method active">
                         <textarea class="cli-input" id="cliInputB" placeholder="Paste second CLI export here to compare..."></textarea>
                         <button class="parse-button" onclick="loadConfigFromText('B')">Load Config B</button>
                     </div>
-                    
+
                     <div id="inputMethodB-preset" class="input-method">
                         <select id="presetSelectB" class="preset-select" size="8">
                             <option value="">Loading PID tunes...</option>
@@ -510,22 +470,21 @@ set i_pitch = 52
                             <h5>Preset Options:</h5>
                             <div id="optionsListB"></div>
                         </div>
-                        <button class="parse-button" onclick="loadConfigFromPreset('B')" id="loadPresetB" disabled>Load Tune B</button>
                     </div>
-                    
+
                     <div id="configStatusB" class="config-status" style="display: none;"></div>
                 </div>
             </div>
-            
+
             <div id="loadingStatus" class="loading-status">
                 🔄 Loading PID tune presets from GitHub...
             </div>
-            
+
             <div style="background: #e3f2fd; padding: 10px; border-radius: 4px; margin: 15px 0; font-size: 14px;">
-                💡 <strong>Tip:</strong> Presets marked with ⚙️ have configurable options (like battery voltage, link frequency, etc.) 
+                💡 <strong>Tip:</strong> Presets marked with ⚙️ have configurable options (like battery voltage, link frequency, etc.)
                 that will appear below the dropdown when selected.
             </div>
-            
+
             <div class="debug-section" style="margin-top: 20px;">
                 <details>
                     <summary style="cursor: pointer; color: #6c757d; font-size: 14px;">🔧 Debug Info (click to expand)</summary>
@@ -533,15 +492,15 @@ set i_pitch = 52
                 </details>
             </div>
         </div>
-        
+
         <div class="results-section" id="resultsSection" style="display: none;">
             <div class="stats" id="statsSection"></div>
-            
+
             <div id="comparisonResults">
                 <h3>Comparison Results</h3>
                 <div id="comparisonDiff"></div>
             </div>
-            
+
             <div class="individual-configs">
                 <h3>Individual Configuration Details</h3>
                 <div class="config-details">
@@ -549,7 +508,7 @@ set i_pitch = 52
                         <h4>Configuration A Settings</h4>
                         <div id="categorizedSettingsA"></div>
                     </div>
-                    
+
                     <div class="config-detail" id="configDetailsB" style="display: none;">
                         <h4>Configuration B Settings</h4>
                         <div id="categorizedSettingsB"></div>
@@ -566,11 +525,11 @@ set i_pitch = 52
                 this.categories = this.initializeCategories();
                 this.presets = this.initializePresets();
             }
-            
+
             initializePresets() {
                 return {}; // Will be populated dynamically
             }
-            
+
             async loadPresetsFromGitHub() {
                 try {
                     const categories = ['tune']; // Only load TUNE presets
@@ -578,25 +537,25 @@ set i_pitch = 52
                     const loadedPresets = {};
                     let totalAttempted = 0;
                     let totalLoaded = 0;
-                    
+
                     for (const version of versions) {
                         for (const category of categories) {
                             try {
                                 const dirUrl = `https://api.github.com/repos/betaflight/firmware-presets/contents/presets/${version}/${category}`;
                                 const response = await fetch(dirUrl);
-                                
+
                                 if (!response.ok) {
                                     console.log(`No ${category} directory found for version ${version}`);
                                     continue;
                                 }
-                                
+
                                 const files = await response.json();
                                 const txtFiles = files.filter(f => f.name.endsWith('.txt'));
                                 console.log(`Found ${txtFiles.length} .txt files in ${version}/${category}`);
-                                
+
                                 // Load ALL tune files (remove the 15 limit for tune category)
                                 totalAttempted += txtFiles.length;
-                                
+
                                 for (const file of txtFiles) {
                                     try {
                                         // Skip utility files before fetching
@@ -604,16 +563,16 @@ set i_pitch = 52
                                         if (utilityFiles.some(util => file.name.toLowerCase().includes(util))) {
                                             continue; // Skip silently
                                         }
-                                        
+
                                         const presetResponse = await fetch(file.download_url);
                                         if (!presetResponse.ok) {
                                             console.warn(`Failed to fetch ${file.name}: ${presetResponse.status}`);
                                             continue;
                                         }
-                                        
+
                                         const presetContent = await presetResponse.text();
                                         const parsedPreset = this.parsePresetFile(presetContent, file.name, category, version);
-                                        
+
                                         if (parsedPreset) {
                                             const key = `${version}_${category}_${file.name.replace('.txt', '')}`;
                                             loadedPresets[key] = parsedPreset;
@@ -631,7 +590,7 @@ set i_pitch = 52
                             }
                         }
                     }
-                    
+
                     console.log(`Successfully loaded ${totalLoaded} out of ${totalAttempted} attempted tune presets`);
                     this.presets = loadedPresets;
                     return totalLoaded;
@@ -642,21 +601,21 @@ set i_pitch = 52
                     return Object.keys(this.presets).length;
                 }
             }
-            
+
             parsePresetFile(content, filename, category, version) {
                 try {
                     const lines = content.split('\n');
                     const metadata = {};
                     const settings = {};
                     const options = [];
-                    
+
                     let inOptionBlock = false;
                     let currentOption = null;
                     let inIncludeBlock = false;
-                    
+
                     for (const line of lines) {
                         const trimmed = line.trim();
-                        
+
                         // Parse metadata
                         if (trimmed.startsWith('#$ TITLE:')) {
                             metadata.title = trimmed.substring(9).trim();
@@ -672,13 +631,13 @@ set i_pitch = 52
                         } else if (trimmed.startsWith('#$ STATUS:')) {
                             metadata.status = trimmed.substring(10).trim();
                         }
-                        
+
                         // Handle includes (we'll skip these for now)
                         if (trimmed.startsWith('#$ INCLUDE:')) {
                             inIncludeBlock = true;
                             continue;
                         }
-                        
+
                         // Handle option blocks - now we'll parse them!
                         if (trimmed.startsWith('#$ OPTION BEGIN')) {
                             inOptionBlock = true;
@@ -699,7 +658,7 @@ set i_pitch = 52
                             inOptionBlock = false;
                             continue;
                         }
-                        
+
                         // Parse set commands
                         if (trimmed.startsWith('set ')) {
                             const setMatch = trimmed.match(/^set\s+([a-zA-Z0-9_]+)\s*=\s*(.+)$/);
@@ -714,20 +673,20 @@ set i_pitch = 52
                             }
                         }
                     }
-                    
+
                     // Generate title from filename if no title found
                     if (!metadata.title) {
                         metadata.title = filename.replace('.txt', '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                     }
-                    
+
                     // Check if this looks like a legitimate tune file
-                    const hasRelevantSettings = Object.keys(settings).some(key => 
-                        key.includes('_pitch') || key.includes('_roll') || key.includes('_yaw') || 
-                        key.includes('dyn_notch') || key.includes('gyro_lpf') || 
+                    const hasRelevantSettings = Object.keys(settings).some(key =>
+                        key.includes('_pitch') || key.includes('_roll') || key.includes('_yaw') ||
+                        key.includes('dyn_notch') || key.includes('gyro_lpf') ||
                         key.includes('feedforward') || key.includes('dterm') ||
                         key.includes('vbat_sag') || key.includes('thrust_linear')
                     ) || options.length > 0;
-                    
+
                     // Only return if we have meaningful data OR if it's clearly a tune file
                     if ((Object.keys(settings).length > 0 || options.length > 0) && (metadata.title || hasRelevantSettings)) {
                         return {
@@ -742,14 +701,14 @@ set i_pitch = 52
                             options: options
                         };
                     }
-                    
+
                     return null;
                 } catch (error) {
                     console.warn(`Failed to parse preset file ${filename}:`, error);
                     return null;
                 }
             }
-            
+
             getFallbackPresets() {
                 return {
                     'basic_freestyle': {
@@ -762,7 +721,26 @@ set i_pitch = 52
                             'p_pitch': '58', 'i_pitch': '52', 'd_pitch': '52', 'f_pitch': '145',
                             'p_roll': '55', 'i_roll': '50', 'd_roll': '48', 'f_roll': '138',
                             'p_yaw': '55', 'i_yaw': '50', 'd_yaw': '0', 'f_yaw': '138'
-                        }
+                        },
+                        options: [
+                            {
+                                name: 'High Battery Voltage (4.35V)',
+                                checked: false,
+                                settings: {
+                                    'vbat_max_cell_voltage': '435',
+                                    'vbat_warning_cell_voltage': '350'
+                                }
+                            },
+                            {
+                                name: 'Race Mode Settings',
+                                checked: false,
+                                settings: {
+                                    'p_pitch': '65',
+                                    'i_pitch': '65',
+                                    'd_pitch': '60'
+                                }
+                            }
+                        ]
                     },
                     'basic_race': {
                         title: 'Basic Race Tune',
@@ -774,11 +752,12 @@ set i_pitch = 52
                             'p_pitch': '70', 'i_pitch': '125', 'd_pitch': '65', 'f_pitch': '270',
                             'p_roll': '65', 'i_roll': '120', 'd_roll': '60', 'f_roll': '250',
                             'p_yaw': '65', 'i_yaw': '120', 'd_yaw': '0', 'f_yaw': '250'
-                        }
+                        },
+                        options: []
                     }
                 };
             }
-            
+
             initializeCategories() {
                 return {
                     'PID Controller': ['pid_process_denom', 'gyro_lpf1_static_hz', 'gyro_lpf1_dyn_min_hz', 'gyro_lpf1_dyn_max_hz', 'dyn_notch_count', 'dyn_notch_q', 'dyn_notch_min_hz', 'dyn_notch_max_hz'],
@@ -795,20 +774,20 @@ set i_pitch = 52
                     'Other': [] // Will catch anything not categorized above
                 };
             }
-            
+
             parse(cliText) {
                 this.settings.clear();
                 const lines = cliText.split('\n');
                 let parsedCount = 0;
-                
+
                 for (const line of lines) {
                     const trimmed = line.trim();
-                    
+
                     // Skip empty lines and comments
                     if (!trimmed || trimmed.startsWith('#')) {
                         continue;
                     }
-                    
+
                     // Parse 'set' commands
                     if (trimmed.startsWith('set ')) {
                         const result = this.parseSetCommand(trimmed);
@@ -818,7 +797,7 @@ set i_pitch = 52
                         }
                     }
                 }
-                
+
                 return {
                     success: true,
                     settingsCount: parsedCount,
@@ -826,7 +805,7 @@ set i_pitch = 52
                     settings: this.settings
                 };
             }
-            
+
             parseSetCommand(line) {
                 // Match: set parameter_name = value
                 const match = line.match(/^set\s+([a-zA-Z0-9_]+)\s*=\s*(.+)$/);
@@ -838,20 +817,20 @@ set i_pitch = 52
                 }
                 return null;
             }
-            
+
             categorizeSettings() {
                 const categorized = {};
                 const foundSettings = new Set();
-                
+
                 // Initialize all categories
                 for (const [categoryName, parameters] of Object.entries(this.categories)) {
                     categorized[categoryName] = [];
                 }
-                
+
                 // Categorize known settings
                 for (const [categoryName, parameters] of Object.entries(this.categories)) {
                     if (categoryName === 'Other') continue; // Skip 'Other' for now
-                    
+
                     for (const param of parameters) {
                         if (this.settings.has(param)) {
                             categorized[categoryName].push({
@@ -862,7 +841,7 @@ set i_pitch = 52
                         }
                     }
                 }
-                
+
                 // Put uncategorized settings in 'Other'
                 for (const [param, value] of this.settings) {
                     if (!foundSettings.has(param)) {
@@ -872,28 +851,28 @@ set i_pitch = 52
                         });
                     }
                 }
-                
+
                 // Remove empty categories
                 for (const categoryName of Object.keys(categorized)) {
                     if (categorized[categoryName].length === 0) {
                         delete categorized[categoryName];
                     }
                 }
-                
+
                 return categorized;
             }
-            
+
             compareWithPreset(presetKey) {
                 const preset = this.presets[presetKey];
                 if (!preset) return null;
-                
+
                 const changes = [];
                 const presetSettings = new Map(Object.entries(preset.settings));
-                
+
                 // Find all parameters that would change
                 for (const [param, newValue] of presetSettings) {
                     const currentValue = this.settings.get(param);
-                    
+
                     if (currentValue === undefined) {
                         // New parameter
                         changes.push({
@@ -920,44 +899,44 @@ set i_pitch = 52
                         });
                     }
                 }
-                
+
                 return {
                     preset: preset,
                     changes: changes
                 };
             }
         }
-        
+
         const parser = new BetaflightCLIParser();
         let presetsLoaded = false;
         let configA = null;
         let configB = null;
-        
+
         // Load presets immediately when page loads
         window.addEventListener('DOMContentLoaded', function() {
             loadPresets();
         });
-        
+
         async function loadPresets() {
             const loadingStatus = document.getElementById('loadingStatus');
             const debugInfo = document.getElementById('debugInfo');
-            
+
             try {
                 loadingStatus.innerHTML = '🔄 Loading PID tune presets from GitHub...';
                 debugInfo.innerHTML = 'Starting tune preset load...<br>';
-                
+
                 const count = await parser.loadPresetsFromGitHub();
-                
+
                 // Update both preset dropdowns
                 populatePresetDropdowns();
-                
+
                 loadingStatus.innerHTML = `✅ Loaded ${count} PID tune presets from official Betaflight repository`;
                 loadingStatus.style.color = '#28a745';
-                
+
                 // Add debug info about loaded presets
                 let debugText = `<strong>Total TUNE presets loaded: ${count}</strong><br><br>`;
                 debugText += '<strong>Loaded tune presets:</strong><br>';
-                
+
                 const groupedPresets = {};
                 for (const [key, preset] of Object.entries(parser.presets)) {
                     const groupKey = `Betaflight ${preset.version}`;
@@ -966,7 +945,7 @@ set i_pitch = 52
                     }
                     groupedPresets[groupKey].push(preset);
                 }
-                
+
                 for (const [group, presets] of Object.entries(groupedPresets)) {
                     debugText += `<br><u>${group} (${presets.length} presets):</u><br>`;
                     presets.sort((a, b) => a.title.localeCompare(b.title));
@@ -975,39 +954,39 @@ set i_pitch = 52
                         debugText += `• ${preset.title} by ${preset.author} (${preset.filename})${optionsInfo}<br>`;
                     }
                 }
-                
+
                 debugText += '<br><strong>Looking for a specific tune?</strong><br>';
                 debugText += '• Try searching in the search box above<br>';
                 debugText += '• Some tunes might be in different versions (4.2, 4.1, etc.)<br>';
                 debugText += '• Check the filenames - they might be named differently<br>';
                 debugText += '• Not all Betaflight Configurator presets are in the GitHub repo<br>';
-                
+
                 debugInfo.innerHTML = debugText;
-                
+
                 // Hide loading status after 3 seconds
                 setTimeout(() => {
                     loadingStatus.style.display = 'none';
                 }, 3000);
-                
+
                 presetsLoaded = true;
             } catch (error) {
                 console.error('Failed to load presets:', error);
                 loadingStatus.innerHTML = '❌ Failed to load presets - using fallback PID tunes';
                 loadingStatus.style.color = '#dc3545';
-                
+
                 debugInfo.innerHTML = `Error loading presets: ${error.message}<br>Using fallback PID tunes instead.`;
-                
+
                 populatePresetDropdowns();
             }
         }
-        
+
         function populatePresetDropdowns() {
             const selectA = document.getElementById('presetSelectA');
             const selectB = document.getElementById('presetSelectB');
-            
+
             [selectA, selectB].forEach(select => {
                 select.innerHTML = '<option value="">Select a tune preset...</option>';
-                
+
                 // Group presets by version only (since all are TUNE category)
                 const grouped = {};
                 for (const [key, preset] of Object.entries(parser.presets)) {
@@ -1017,18 +996,18 @@ set i_pitch = 52
                     }
                     grouped[groupKey].push({key, preset});
                 }
-                
+
                 // Sort presets within each group alphabetically
                 for (const groupKey in grouped) {
                     grouped[groupKey].sort((a, b) => a.preset.title.localeCompare(b.preset.title));
                 }
-                
+
                 // Add grouped options
                 for (const [groupName, presets] of Object.entries(grouped)) {
                     if (presets.length > 0) {
                         const optgroup = document.createElement('optgroup');
                         optgroup.label = groupName;
-                        
+
                         for (const {key, preset} of presets) {
                             const option = document.createElement('option');
                             option.value = key;
@@ -1036,141 +1015,166 @@ set i_pitch = 52
                             option.textContent = `${preset.title}${preset.author ? ` (${preset.author})` : ''}${optionsIndicator}`;
                             optgroup.appendChild(option);
                         }
-                        
+
                         select.appendChild(optgroup);
                     }
                 }
             });
-            
+
             // Add event listeners
             document.getElementById('presetSelectA').addEventListener('change', function() {
-                const hasValue = !!this.value;
-                document.getElementById('loadPresetA').disabled = !hasValue;
-                if (hasValue) {
+                console.log('Preset A changed to:', this.value);
+                if (this.value) {
                     showPresetOptions('A', this.value);
                 } else {
                     hidePresetOptions('A');
+                    configA = null;
+                    document.getElementById('configStatusA').style.display = 'none';
+                    updateCompareButton();
                 }
             });
-            
+
             document.getElementById('presetSelectB').addEventListener('change', function() {
-                const hasValue = !!this.value;
-                document.getElementById('loadPresetB').disabled = !hasValue;
-                if (hasValue) {
+                console.log('Preset B changed to:', this.value);
+                if (this.value) {
                     showPresetOptions('B', this.value);
                 } else {
                     hidePresetOptions('B');
+                    configB = null;
+                    document.getElementById('configStatusB').style.display = 'none';
+                    updateCompareButton();
                 }
             });
         }
-        
+
         function showPresetOptions(side, presetKey) {
             const preset = parser.presets[presetKey];
             const optionsDiv = document.getElementById(`presetOptions${side}`);
             const optionsListDiv = document.getElementById(`optionsList${side}`);
-            
+
             if (!preset || !preset.options || preset.options.length === 0) {
                 hidePresetOptions(side);
                 return;
             }
-            
+
+            console.log(`Showing ${preset.options.length} options for preset ${presetKey} on side ${side}`);
+
             // Build options HTML
             let html = '';
             preset.options.forEach((option, index) => {
                 const optionId = `option_${side}_${index}`;
-                const settingsPreview = Object.entries(option.settings).slice(0, 3).map(([key, value]) => 
+                const settingsPreview = Object.entries(option.settings).slice(0, 3).map(([key, value]) =>
                     `${key} = ${value}`
                 ).join(', ');
                 const moreSettings = Object.keys(option.settings).length > 3 ? ` (+${Object.keys(option.settings).length - 3} more)` : '';
-                
+
+                console.log(`Creating checkbox ${optionId} for option "${option.name}" (default: ${option.checked})`);
+
                 html += `
                     <div class="option-item">
                         <label>
-                            <input type="checkbox" class="option-checkbox" id="${optionId}" ${option.checked ? 'checked' : ''}>
+                            <input type="checkbox" class="option-checkbox" id="${optionId}" ${option.checked ? 'checked' : ''}
+                                   onchange="onOptionChanged('${side}')">
                             <span class="option-label">${option.name}</span>
                         </label>
                         <div class="option-settings">${settingsPreview}${moreSettings}</div>
                     </div>
                 `;
             });
-            
+
             optionsListDiv.innerHTML = html;
             optionsDiv.style.display = 'block';
+
+            // Immediately load the config with default option states
+            loadConfigFromPreset(side);
         }
-        
+
         function hidePresetOptions(side) {
             const optionsDiv = document.getElementById(`presetOptions${side}`);
             optionsDiv.style.display = 'none';
         }
-        
+
+        function onOptionChanged(side) {
+            // Reload the config with the new option selections
+            loadConfigFromPreset(side);
+        }
+
         function switchInputMethod(side, method) {
             // Update tab buttons
-            const tabs = document.querySelectorAll(`#inputMethod${side}-text`).length > 0 ? 
+            const tabs = document.querySelectorAll(`#inputMethod${side}-text`).length > 0 ?
                 document.querySelectorAll(`.input-method-tabs button`) : [];
-            
+
             document.querySelectorAll(`.compare-side:nth-child(${side === 'A' ? '1' : '3'}) .tab-button`).forEach(btn => {
                 btn.classList.remove('active');
             });
-            
+
             document.querySelector(`.compare-side:nth-child(${side === 'A' ? '1' : '3'}) .tab-button:nth-child(${method === 'text' ? '1' : '2'})`).classList.add('active');
-            
+
             // Update input method visibility
             document.getElementById(`inputMethod${side}-text`).classList.toggle('active', method === 'text');
             document.getElementById(`inputMethod${side}-preset`).classList.toggle('active', method === 'preset');
         }
-        
+
         function loadConfigFromText(side) {
             const textArea = document.getElementById(`cliInput${side}`);
             const statusDiv = document.getElementById(`configStatus${side}`);
-            
+
             if (!textArea.value.trim()) {
                 alert(`Please paste some CLI export data in Configuration ${side} first!`);
                 return;
             }
-            
+
             try {
-                const result = parser.parse(textArea.value);
-                
+                // Create a temporary parser instance to avoid conflicts
+                const tempParser = new BetaflightCLIParser();
+                const result = tempParser.parse(textArea.value);
+
                 const config = {
                     type: 'text',
                     title: `Custom CLI Export ${side}`,
                     description: 'Loaded from CLI text',
-                    settings: parser.settings,
+                    settings: new Map(tempParser.settings), // Create a new Map copy
                     metadata: {
                         settingsCount: result.settingsCount,
                         totalLines: result.totalLines
                     }
                 };
-                
+
                 if (side === 'A') {
                     configA = config;
                 } else {
                     configB = config;
                 }
-                
+
                 statusDiv.innerHTML = `✅ Loaded ${result.settingsCount} settings from ${result.totalLines} lines`;
                 statusDiv.className = 'config-status config-loaded';
                 statusDiv.style.display = 'block';
-                
+
                 updateCompareButton();
-                
+
             } catch (error) {
                 statusDiv.innerHTML = `❌ Error parsing CLI: ${error.message}`;
                 statusDiv.className = 'config-status config-error';
                 statusDiv.style.display = 'block';
             }
         }
-        
+
         function loadConfigFromPreset(side) {
             const presetSelect = document.getElementById(`presetSelect${side}`);
             const statusDiv = document.getElementById(`configStatus${side}`);
             const selectedPreset = presetSelect.value;
-            
+
             if (!selectedPreset) {
-                alert(`Please select a PID tune for Configuration ${side} first!`);
+                if (side === 'A') {
+                    configA = null;
+                } else {
+                    configB = null;
+                }
+                statusDiv.style.display = 'none';
+                updateCompareButton();
                 return;
             }
-            
+
             const preset = parser.presets[selectedPreset];
             if (!preset) {
                 statusDiv.innerHTML = `❌ PID tune not found`;
@@ -1178,23 +1182,32 @@ set i_pitch = 52
                 statusDiv.style.display = 'block';
                 return;
             }
-            
+
             // Start with the base preset settings
             const finalSettings = new Map(Object.entries(preset.settings));
-            
+            console.log(`${side}: Starting with base settings:`, Object.keys(preset.settings));
+
             // Apply selected options
+            const appliedOptions = [];
             if (preset.options && preset.options.length > 0) {
+                console.log(`${side}: Checking ${preset.options.length} available options...`);
                 preset.options.forEach((option, index) => {
                     const optionCheckbox = document.getElementById(`option_${side}_${index}`);
-                    if (optionCheckbox && optionCheckbox.checked) {
-                        // Add option settings to final settings
+                    const isChecked = optionCheckbox && optionCheckbox.checked;
+                    console.log(`${side}: Option ${index} "${option.name}" - checkbox exists: ${!!optionCheckbox}, checked: ${isChecked}`);
+
+                    if (isChecked) {
+                        // Add option settings to final settings (these will override base settings if same parameter)
                         for (const [key, value] of Object.entries(option.settings)) {
+                            const oldValue = finalSettings.get(key);
                             finalSettings.set(key, value);
+                            console.log(`${side}: Option "${option.name}" set ${key}: ${oldValue} → ${value}`);
                         }
+                        appliedOptions.push(option.name);
                     }
                 });
             }
-            
+
             const config = {
                 type: 'preset',
                 title: preset.title,
@@ -1205,61 +1218,75 @@ set i_pitch = 52
                     category: preset.category,
                     version: preset.version,
                     filename: preset.filename,
-                    optionsApplied: preset.options ? preset.options.filter((option, index) => {
-                        const optionCheckbox = document.getElementById(`option_${side}_${index}`);
-                        return optionCheckbox && optionCheckbox.checked;
-                    }).map(option => option.name) : []
+                    optionsApplied: appliedOptions
                 }
             };
-            
+
             if (side === 'A') {
                 configA = config;
             } else {
                 configB = config;
             }
-            
-            const appliedOptions = config.metadata.optionsApplied.length > 0 ? 
-                ` (with ${config.metadata.optionsApplied.length} options)` : '';
-            
-            statusDiv.innerHTML = `✅ Loaded PID tune: ${preset.title}${appliedOptions}`;
+
+            const appliedOptionsText = appliedOptions.length > 0 ?
+                ` (with ${appliedOptions.length} options: ${appliedOptions.join(', ')})` : '';
+
+            statusDiv.innerHTML = `✅ Loaded PID tune: ${preset.title}${appliedOptionsText}<br>Base settings: ${Object.keys(preset.settings).length}, Final settings: ${finalSettings.size}`;
             statusDiv.className = 'config-status config-loaded';
             statusDiv.style.display = 'block';
-            
+
             updateCompareButton();
         }
-        
+
         function updateCompareButton() {
             const compareBtn = document.getElementById('compareConfigsBtn');
             compareBtn.disabled = !(configA && configB);
         }
-        
+
         function compareConfigs() {
             if (!configA || !configB) {
                 alert('Please load both Configuration A and Configuration B first!');
                 return;
             }
-            
+
+            // Debug: Log the final settings for both configs
+            console.log('=== COMPARISON DEBUG ===');
+            console.log('Config A final settings:', Array.from(configA.settings.entries()));
+            console.log('Config B final settings:', Array.from(configB.settings.entries()));
+
+            // Debug: Check for specific parameters that should differ
+            const testParams = ['p_pitch', 'i_pitch', 'd_pitch', 'vbat_max_cell_voltage', 'vbat_warning_cell_voltage'];
+            testParams.forEach(param => {
+                const valueA = configA.settings.get(param);
+                const valueB = configB.settings.get(param);
+                if (valueA !== valueB) {
+                    console.log(`Parameter ${param}: A="${valueA}" vs B="${valueB}" - DIFFERENT`);
+                } else if (valueA !== undefined) {
+                    console.log(`Parameter ${param}: A="${valueA}" vs B="${valueB}" - SAME`);
+                }
+            });
+
             const comparison = compareConfigurations(configA, configB);
             displayConfigComparison(comparison);
-            
+
             // Show individual config details
             showConfigDetails();
-            
+
             document.getElementById('resultsSection').style.display = 'block';
         }
-        
+
         function compareConfigurations(configA, configB) {
             const changes = [];
             const settingsA = configA.settings;
             const settingsB = configB.settings;
-            
+
             // Get all unique parameters from both configs
             const allParams = new Set([...settingsA.keys(), ...settingsB.keys()]);
-            
+
             for (const param of allParams) {
                 const valueA = settingsA.get(param);
                 const valueB = settingsB.get(param);
-                
+
                 if (valueA === undefined && valueB !== undefined) {
                     changes.push({
                         parameter: param,
@@ -1290,159 +1317,94 @@ set i_pitch = 52
                     });
                 }
             }
-            
+
             return {
                 configA: configA,
                 configB: configB,
                 changes: changes
             };
         }
-        
+
         function displayConfigComparison(comparison) {
             const statsSection = document.getElementById('statsSection');
             const comparisonDiff = document.getElementById('comparisonDiff');
-            
+
             const different = comparison.changes.filter(c => c.type === 'different');
             const onlyA = comparison.changes.filter(c => c.type === 'only_a');
             const onlyB = comparison.changes.filter(c => c.type === 'only_b');
             const same = comparison.changes.filter(c => c.type === 'same');
-            
+
+            // Debug logging for troubleshooting
+            console.log('Comparison results:', {
+                different: different.length,
+                onlyA: onlyA.length,
+                onlyB: onlyB.length,
+                same: same.length,
+                configA_settings: comparison.configA.settings.size,
+                configB_settings: comparison.configB.settings.size
+            });
+
+            if (different.length > 0) {
+                console.log('Different parameters:', different.map(d => `${d.parameter}: A="${d.valueA}" vs B="${d.valueB}"`));
+            }
+
             // Show summary
             statsSection.innerHTML = `
                 <strong>Comparison Summary:</strong><br>
-                🔄 ${different.length} different values | 
-                🅰️ ${onlyA.length} unique to A | 
-                🅱️ ${onlyB.length} unique to B | 
-                ✅ ${same.length} identical
+                📊 ${different.length} different values |
+                🅰️ ${onlyA.length} only in A |
+                🅱️ ${onlyB.length} only in B |
+                ✅ ${same.length} identical<br>
+                <small style="color: #6c757d;">Config A: ${comparison.configA.settings.size} settings | Config B: ${comparison.configB.settings.size} settings</small>
             `;
-            
+
             let html = `
                 <div class="preset-info">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
                         <div>
                             <div class="preset-title">A: ${comparison.configA.title}</div>
                             <div class="preset-description">${comparison.configA.description}</div>
-                            ${comparison.configA.metadata && comparison.configA.metadata.optionsApplied && comparison.configA.metadata.optionsApplied.length > 0 ? 
+                            ${comparison.configA.metadata && comparison.configA.metadata.optionsApplied && comparison.configA.metadata.optionsApplied.length > 0 ?
                                 `<div style="font-size: 12px; color: #007acc; margin-top: 5px;">Options: ${comparison.configA.metadata.optionsApplied.join(', ')}</div>` : ''}
                         </div>
                         <div style="text-align: right;">
                             <div class="preset-title">B: ${comparison.configB.title}</div>
                             <div class="preset-description">${comparison.configB.description}</div>
-                            ${comparison.configB.metadata && comparison.configB.metadata.optionsApplied && comparison.configB.metadata.optionsApplied.length > 0 ? 
+                            ${comparison.configB.metadata && comparison.configB.metadata.optionsApplied && comparison.configB.metadata.optionsApplied.length > 0 ?
                                 `<div style="font-size: 12px; color: #28a745; margin-top: 5px;">Options: ${comparison.configB.metadata.optionsApplied.join(', ')}</div>` : ''}
                         </div>
                     </div>
                 </div>
             `;
-            
+
             if (different.length > 0) {
                 html += '<h5>🔄 Parameters with different values:</h5>';
+                // Sort different parameters to show PID parameters first
+                different.sort((a, b) => {
+                    const pidParams = ['p_pitch', 'i_pitch', 'd_pitch', 'p_roll', 'i_roll', 'd_roll', 'p_yaw', 'i_yaw', 'd_yaw', 'f_pitch', 'f_roll', 'f_yaw'];
+                    const aIsPid = pidParams.includes(a.parameter);
+                    const bIsPid = pidParams.includes(b.parameter);
+                    if (aIsPid && !bIsPid) return -1;
+                    if (!aIsPid && bIsPid) return 1;
+                    return a.parameter.localeCompare(b.parameter);
+                });
+
                 for (const change of different) {
+                    const isPidParam = ['p_pitch', 'i_pitch', 'd_pitch', 'p_roll', 'i_roll', 'd_roll', 'p_yaw', 'i_yaw', 'd_yaw', 'f_pitch', 'f_roll', 'f_yaw'].includes(change.parameter);
+                    const highlightClass = isPidParam ? 'style="background: #fffbf0; border-left-color: #ff9800;"' : '';
+
                     html += `
-                        <div class="diff-item diff-changed">
+                        <div class="diff-item diff-changed" ${highlightClass}>
                             <span class="setting-name">${change.parameter}</span>
                             <span class="diff-value">
-                                <span class="diff-old">${change.valueA}</span> → 
-                                <span class="diff-new-value">${change.valueB}</span>
-                            </span>
-                        </div>
-                    `;
-                }
-            }
-            
-            if (onlyA.length > 0) {
-                html += '<h5>🅰️ Parameters only in Configuration A:</h5>';
-                for (const change of onlyA) {
-                    html += `
-                        <div class="diff-item" style="background: #fff3cd; border-left: 4px solid #ffc107;">
-                            <span class="setting-name">${change.parameter}</span>
-                            <span class="diff-value" style="color: #856404; font-weight: bold;">${change.valueA}</span>
-                        </div>
-                    `;
-                }
-            }
-            
-            if (onlyB.length > 0) {
-                html += '<h5>🅱️ Parameters only in Configuration B:</h5>';
-                for (const change of onlyB) {
-                    html += `
-                        <div class="diff-item" style="background: #d1ecf1; border-left: 4px solid #17a2b8;">
-                            <span class="setting-name">${change.parameter}</span>
-                            <span class="diff-value" style="color: #0c5460; font-weight: bold;">${change.valueB}</span>
-                        </div>
-                    `;
-                }
-            }
-            
-            if (same.length > 0 && same.length <= 15) {
-                html += '<h5>✅ Parameters with identical values:</h5>';
-                for (const change of same) {
-                    html += `
-                        <div class="diff-item diff-unchanged">
-                            <span class="setting-name">${change.parameter}</span>
-                            <span class="diff-value">${change.valueA}</span>
-                        </div>
-                    `;
-                }
-            } else if (same.length > 15) {
-                html += `<h5>✅ ${same.length} parameters have identical values</h5>`;
-            }
-            
-            if (different.length === 0 && onlyA.length === 0 && onlyB.length === 0) {
-                html += '<div class="diff-item diff-unchanged">🎉 Configurations are identical!</div>';
-            }
-            
-            comparisonDiff.innerHTML = html;
-        }
-        
-        function displayConfigComparison(comparison) {
-            const statsSection = document.getElementById('statsSection');
-            const comparisonDiff = document.getElementById('comparisonDiff');
-            
-            const different = comparison.changes.filter(c => c.type === 'different');
-            const onlyA = comparison.changes.filter(c => c.type === 'only_a');
-            const onlyB = comparison.changes.filter(c => c.type === 'only_b');
-            const same = comparison.changes.filter(c => c.type === 'same');
-            
-            // Show summary
-            statsSection.innerHTML = `
-                <strong>Comparison Summary:</strong><br>
-                📊 ${different.length} different values | 
-                🅰️ ${onlyA.length} only in A | 
-                🅱️ ${onlyB.length} only in B | 
-                ✅ ${same.length} identical
-            `;
-            
-            let html = `
-                <div class="preset-info">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                        <div>
-                            <div class="preset-title">A: ${comparison.configA.title}</div>
-                            <div class="preset-description">${comparison.configA.description}</div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div class="preset-title">B: ${comparison.configB.title}</div>
-                            <div class="preset-description">${comparison.configB.description}</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            if (different.length > 0) {
-                html += '<h5>🔄 Parameters with different values:</h5>';
-                for (const change of different) {
-                    html += `
-                        <div class="diff-item diff-changed">
-                            <span class="setting-name">${change.parameter}</span>
-                            <span class="diff-value">
-                                <span style="color: #007acc;">A:</span> <span class="diff-old">${change.valueA}</span> | 
+                                <span style="color: #007acc;">A:</span> <span class="diff-old">${change.valueA}</span> |
                                 <span style="color: #28a745;">B:</span> <span class="diff-new-value">${change.valueB}</span>
                             </span>
                         </div>
                     `;
                 }
             }
-            
+
             if (onlyA.length > 0) {
                 html += '<h5>🅰️ Parameters only in Configuration A:</h5>';
                 for (const change of onlyA) {
@@ -1454,7 +1416,7 @@ set i_pitch = 52
                     `;
                 }
             }
-            
+
             if (onlyB.length > 0) {
                 html += '<h5>🅱️ Parameters only in Configuration B:</h5>';
                 for (const change of onlyB) {
@@ -1466,7 +1428,7 @@ set i_pitch = 52
                     `;
                 }
             }
-            
+
             if (same.length > 0 && same.length <= 15) {
                 html += '<h5>✅ Parameters with identical values:</h5>';
                 for (const change of same) {
@@ -1480,42 +1442,42 @@ set i_pitch = 52
             } else if (same.length > 15) {
                 html += `<h5>✅ ${same.length} parameters have identical values</h5>`;
             }
-            
+
             if (different.length === 0 && onlyA.length === 0 && onlyB.length === 0) {
                 html += '<div class="diff-item diff-unchanged">🎉 Configurations are identical!</div>';
             }
-            
+
             comparisonDiff.innerHTML = html;
         }
-        
+
         function showConfigDetails() {
             if (configA) {
                 const categorizedA = categorizeSettings(configA.settings);
                 document.getElementById('categorizedSettingsA').innerHTML = renderCategorizedSettings(categorizedA);
                 document.getElementById('configDetailsA').style.display = 'block';
             }
-            
+
             if (configB) {
                 const categorizedB = categorizeSettings(configB.settings);
                 document.getElementById('categorizedSettingsB').innerHTML = renderCategorizedSettings(categorizedB);
                 document.getElementById('configDetailsB').style.display = 'block';
             }
         }
-        
+
         function categorizeSettings(settings) {
             const categories = parser.categories;
             const categorized = {};
             const foundSettings = new Set();
-            
+
             // Initialize all categories
             for (const [categoryName, parameters] of Object.entries(categories)) {
                 categorized[categoryName] = [];
             }
-            
+
             // Categorize known settings
             for (const [categoryName, parameters] of Object.entries(categories)) {
                 if (categoryName === 'Other') continue;
-                
+
                 for (const param of parameters) {
                     if (settings.has(param)) {
                         categorized[categoryName].push({
@@ -1526,7 +1488,7 @@ set i_pitch = 52
                     }
                 }
             }
-            
+
             // Put uncategorized settings in 'Other'
             for (const [param, value] of settings) {
                 if (!foundSettings.has(param)) {
@@ -1536,50 +1498,48 @@ set i_pitch = 52
                     });
                 }
             }
-            
+
             // Remove empty categories
             for (const categoryName of Object.keys(categorized)) {
                 if (categorized[categoryName].length === 0) {
                     delete categorized[categoryName];
                 }
             }
-            
+
             return categorized;
         }
-        
+
         function clearAll() {
             // Clear configurations
             configA = null;
             configB = null;
-            
+
             // Clear inputs
             document.getElementById('cliInputA').value = '';
             document.getElementById('cliInputB').value = '';
             document.getElementById('presetSelectA').value = '';
             document.getElementById('presetSelectB').value = '';
-            
+
             // Hide preset options
             hidePresetOptions('A');
             hidePresetOptions('B');
-            
+
             // Clear status
             document.getElementById('configStatusA').style.display = 'none';
             document.getElementById('configStatusB').style.display = 'none';
-            
+
             // Clear results
             document.getElementById('resultsSection').style.display = 'none';
             document.getElementById('configDetailsA').style.display = 'none';
             document.getElementById('configDetailsB').style.display = 'none';
-            
-            // Update buttons
+
+            // Update compare button
             updateCompareButton();
-            document.getElementById('loadPresetA').disabled = true;
-            document.getElementById('loadPresetB').disabled = true;
         }
-        
+
         function renderCategorizedSettings(categorized) {
             let html = '';
-            
+
             for (const [categoryName, settings] of Object.entries(categorized)) {
                 html += `
                     <div class="category">
@@ -1588,7 +1548,7 @@ set i_pitch = 52
                         </div>
                         <div class="category-content">
                 `;
-                
+
                 for (const setting of settings) {
                     html += `
                         <div class="setting-item">
@@ -1597,21 +1557,16 @@ set i_pitch = 52
                         </div>
                     `;
                 }
-                
+
                 html += `
                         </div>
                     </div>
                 `;
             }
-            
+
             return html;
         }
-        
-        function toggleCategory(header) {
-            const category = header.parentElement;
-            category.classList.toggle('collapsed');
-        }
-        
+
         function toggleCategory(header) {
             const category = header.parentElement;
             category.classList.toggle('collapsed');
