@@ -152,8 +152,18 @@
             background: white;
         }
 
+        .option-item.disabled {
+            background: #f8f9fa;
+            border-color: #e9ecef;
+            opacity: 0.6;
+        }
+
         .option-checkbox {
             margin-right: 8px;
+        }
+
+        .option-checkbox:disabled {
+            cursor: not-allowed;
         }
 
         .option-label {
@@ -161,11 +171,22 @@
             color: #495057;
         }
 
+        .option-label.disabled {
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
         .option-settings {
             margin-top: 5px;
             font-size: 12px;
             color: #6c757d;
             font-family: 'Courier New', monospace;
+        }
+
+        .option-unsupported {
+            color: #dc3545;
+            font-style: italic;
+            font-size: 11px;
         }
 
         .preset-controls button:disabled {
@@ -1061,31 +1082,63 @@ set i_pitch = 52
 
             // Build options HTML
             let html = '';
+            let supportedCount = 0;
+            let unsupportedCount = 0;
+
             preset.options.forEach((option, index) => {
                 const optionId = `option_${side}_${index}`;
-                const settingsPreview = Object.entries(option.settings).slice(0, 3).map(([key, value]) =>
-                    `${key} = ${value}`
-                ).join(', ');
-                const moreSettings = Object.keys(option.settings).length > 3 ? ` (+${Object.keys(option.settings).length - 3} more)` : '';
+                const hasSettings = option.settings && Object.keys(option.settings).length > 0;
 
-                console.log(`Creating checkbox ${optionId} for option "${option.name}" (default: ${option.checked})`);
+                if (hasSettings) {
+                    supportedCount++;
+                    const settingsPreview = Object.entries(option.settings).slice(0, 3).map(([key, value]) =>
+                        `${key} = ${value}`
+                    ).join(', ');
+                    const moreSettings = Object.keys(option.settings).length > 3 ? ` (+${Object.keys(option.settings).length - 3} more)` : '';
 
-                html += `
-                    <div class="option-item">
-                        <label>
-                            <input type="checkbox" class="option-checkbox" id="${optionId}" ${option.checked ? 'checked' : ''}
-                                   onchange="onOptionChanged('${side}')">
-                            <span class="option-label">${option.name}</span>
-                        </label>
-                        <div class="option-settings">${settingsPreview}${moreSettings}</div>
-                    </div>
-                `;
+                    console.log(`Creating checkbox ${optionId} for option "${option.name}" (default: ${option.checked}) - SUPPORTED`);
+
+                    html += `
+                        <div class="option-item">
+                            <label>
+                                <input type="checkbox" class="option-checkbox" id="${optionId}" ${option.checked ? 'checked' : ''}
+                                       onchange="onOptionChanged('${side}')">
+                                <span class="option-label">${option.name}</span>
+                            </label>
+                            <div class="option-settings">${settingsPreview}${moreSettings}</div>
+                        </div>
+                    `;
+                } else {
+                    unsupportedCount++;
+                    console.log(`Creating disabled checkbox ${optionId} for option "${option.name}" - UNSUPPORTED (no settings)`);
+
+                    html += `
+                        <div class="option-item disabled">
+                            <label>
+                                <input type="checkbox" class="option-checkbox" id="${optionId}" disabled
+                                       title="This option uses advanced preset features (includes, templates, etc.) that are not supported by this comparator">
+                                <span class="option-label disabled">${option.name}</span>
+                            </label>
+                            <div class="option-unsupported">⚠️ Unsupported: Uses advanced preset templating (includes, variables, etc.)</div>
+                        </div>
+                    `;
+                }
             });
+
+            // Add summary at the top
+            if (unsupportedCount > 0) {
+                html = `
+                    <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; padding: 8px; margin-bottom: 10px; font-size: 12px;">
+                        📊 <strong>Options Summary:</strong> ${supportedCount} supported, ${unsupportedCount} unsupported<br>
+                        <small style="color: #856404;">Unsupported options use advanced Betaflight preset features that require the full Configurator processing engine.</small>
+                    </div>
+                ` + html;
+            }
 
             optionsListDiv.innerHTML = html;
             optionsDiv.style.display = 'block';
 
-            // Immediately load the config with default option states
+            // Immediately load the config with default option states (only for supported options)
             loadConfigFromPreset(side);
         }
 
