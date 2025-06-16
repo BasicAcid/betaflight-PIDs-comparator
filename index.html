@@ -80,6 +80,11 @@ set i_pitch = 52
                     <!-- Preset Tab -->
                     <div class="tab-content" id="tabA-preset">
                         <div class="form-group">
+                            <label class="form-label" for="presetSearchA">Search Presets</label>
+                            <input type="text" class="form-control" id="presetSearchA" placeholder="Type to search presets...">
+                        </div>
+
+                        <div class="form-group">
                             <label class="form-label" for="presetSelectA">Choose Preset</label>
                             <select class="form-control preset-select" id="presetSelectA" size="6">
                                 <option value="">Loading presets...</option>
@@ -135,6 +140,11 @@ set i_pitch = 52
 
                     <!-- Preset Tab -->
                     <div class="tab-content" id="tabB-preset">
+                        <div class="form-group">
+                            <label class="form-label" for="presetSearchB">Search Presets</label>
+                            <input type="text" class="form-control" id="presetSearchB" placeholder="Type to search presets...">
+                        </div>
+
                         <div class="form-group">
                             <label class="form-label" for="presetSelectB">Choose Preset</label>
                             <select class="form-control preset-select" id="presetSelectB" size="6">
@@ -611,12 +621,92 @@ set i_pitch = 52
         let configA = null;
         let configB = null;
         let currentResultsTab = 'summary';
+        let allPresetsA = []; // Store all preset options for filtering
+        let allPresetsB = []; // Store all preset options for filtering
 
         // Initialize app
         window.addEventListener('DOMContentLoaded', function() {
             loadPresets();
             updateUI();
+            setupSearchListeners();
         });
+
+        function setupSearchListeners() {
+            const searchA = document.getElementById('presetSearchA');
+            const searchB = document.getElementById('presetSearchB');
+
+            searchA.addEventListener('input', function() {
+                filterPresets('A', this.value);
+            });
+
+            searchB.addEventListener('input', function() {
+                filterPresets('B', this.value);
+            });
+        }
+
+        function filterPresets(side, searchTerm) {
+            const select = document.getElementById(`presetSelect${side}`);
+            const allPresets = side === 'A' ? allPresetsA : allPresetsB;
+
+            // Clear current options
+            select.innerHTML = '<option value="">Select a preset...</option>';
+
+            if (!searchTerm.trim()) {
+                // No search term, show all presets
+                populateSelectWithPresets(select, allPresets);
+                return;
+            }
+
+            // Filter presets based on search term
+            const searchLower = searchTerm.toLowerCase();
+            const filtered = allPresets.filter(preset => {
+                const title = preset.preset.title.toLowerCase();
+                const author = (preset.preset.author || '').toLowerCase();
+                const description = (preset.preset.description || '').toLowerCase();
+
+                return title.includes(searchLower) ||
+                       author.includes(searchLower) ||
+                       description.includes(searchLower);
+            });
+
+            populateSelectWithPresets(select, filtered);
+        }
+
+        function populateSelectWithPresets(select, presets) {
+            const grouped = {};
+
+            // Group presets by version
+            for (const preset of presets) {
+                const groupKey = `Betaflight ${preset.preset.version}`;
+                if (!grouped[groupKey]) {
+                    grouped[groupKey] = [];
+                }
+                grouped[groupKey].push(preset);
+            }
+
+            // Sort within each group
+            for (const groupKey in grouped) {
+                grouped[groupKey].sort((a, b) => a.preset.title.localeCompare(b.preset.title));
+            }
+
+            // Add options to select
+            for (const [groupName, presets] of Object.entries(grouped)) {
+                if (presets.length > 0) {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = groupName;
+
+                    for (const {key, preset} of presets) {
+                        const option = document.createElement('option');
+                        option.value = key;
+                        const optionsIndicator = preset.options && preset.options.length > 0 ? ` [${preset.options.length}]` : '';
+                        option.textContent = `${preset.title}${preset.author ? ` (${preset.author})` : ''}${optionsIndicator}`;
+                        optgroup.appendChild(option);
+                    }
+
+                    select.appendChild(optgroup);
+                }
+            }
+        }
 
         async function loadPresets() {
             const presetsStatus = document.getElementById('presetsStatus');
@@ -721,38 +811,19 @@ set i_pitch = 52
             const selectA = document.getElementById('presetSelectA');
             const selectB = document.getElementById('presetSelectB');
 
-            [selectA, selectB].forEach(select => {
-                select.innerHTML = '<option value="">Select a preset...</option>';
+            // Prepare all presets data for filtering
+            allPresetsA = [];
+            allPresetsB = [];
 
-                const grouped = {};
-                for (const [key, preset] of Object.entries(parser.presets)) {
-                    const groupKey = `Betaflight ${preset.version}`;
-                    if (!grouped[groupKey]) {
-                        grouped[groupKey] = [];
-                    }
-                    grouped[groupKey].push({key, preset});
-                }
+            for (const [key, preset] of Object.entries(parser.presets)) {
+                allPresetsA.push({key, preset});
+                allPresetsB.push({key, preset});
+            }
 
-                for (const groupKey in grouped) {
-                    grouped[groupKey].sort((a, b) => a.preset.title.localeCompare(b.preset.title));
-                }
-
-                for (const [groupName, presets] of Object.entries(grouped)) {
-                    if (presets.length > 0) {
-                        const optgroup = document.createElement('optgroup');
-                        optgroup.label = groupName;
-
-                        for (const {key, preset} of presets) {
-                            const option = document.createElement('option');
-                            option.value = key;
-                            const optionsIndicator = preset.options && preset.options.length > 0 ? ` [${preset.options.length}]` : '';
-                            option.textContent = `${preset.title}${preset.author ? ` (${preset.author})` : ''}${optionsIndicator}`;
-                            optgroup.appendChild(option);
-                        }
-
-                        select.appendChild(optgroup);
-                    }
-                }
+            // Populate both dropdowns initially with all presets
+            [selectA, selectB].forEach((select, index) => {
+                const allPresets = index === 0 ? allPresetsA : allPresetsB;
+                populateSelectWithPresets(select, allPresets);
             });
 
             // Event listeners
@@ -1358,6 +1429,12 @@ set i_pitch = 52
             document.getElementById('cliInputB').value = '';
             document.getElementById('presetSelectA').value = '';
             document.getElementById('presetSelectB').value = '';
+            document.getElementById('presetSearchA').value = '';
+            document.getElementById('presetSearchB').value = '';
+
+            // Reset preset dropdowns to show all presets
+            filterPresets('A', '');
+            filterPresets('B', '');
 
             // Hide options
             hidePresetOptions('A');
