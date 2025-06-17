@@ -8,7 +8,6 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Sticky Header -->
         <header class="header">
             <div class="header-content">
                 <a href="#" class="logo">Betaflight PID Comparator</a>
@@ -24,7 +23,6 @@
             </div>
         </header>
 
-        <!-- Status Bar -->
         <div class="status-bar">
             <div class="status-content">
                 <div class="status-badges">
@@ -41,11 +39,8 @@
             </div>
         </div>
 
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- Configuration Grid -->
             <div class="config-grid">
-                <!-- Configuration A -->
                 <div class="config-card">
                     <div class="config-header">
                         <h2 class="config-title">Configuration A</h2>
@@ -57,7 +52,6 @@
                         <button class="tab-btn" onclick="switchTab('A', 'preset')">Preset</button>
                     </div>
 
-                    <!-- CLI Text Tab -->
                     <div class="tab-content active" id="tabA-text">
                         <div class="form-group">
                             <label class="form-label" for="cliInputA">Paste CLI Export</label>
@@ -75,7 +69,6 @@ set i_pitch = 52
                         </button>
                     </div>
 
-                    <!-- Preset Tab -->
                     <div class="tab-content" id="tabA-preset">
                         <div class="form-group">
                             <label class="form-label" for="presetSearchA">Search Presets</label>
@@ -83,10 +76,10 @@ set i_pitch = 52
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="presetSelectA">Choose Preset</label>
-                            <select class="form-control preset-select" id="presetSelectA" size="6">
-                                <option value="">Loading presets...</option>
-                            </select>
+                            <label class="form-label" for="presetResultsA">Choose Preset</label>
+                            <div class="preset-results" id="presetResultsA">
+                                <div class="preset-results-placeholder">Loading presets...</div>
+                            </div>
                         </div>
 
                         <div class="preset-options hidden" id="presetOptionsA">
@@ -105,12 +98,10 @@ set i_pitch = 52
                     </div>
                 </div>
 
-                <!-- VS Section -->
                 <div class="vs-section">
                     <div class="vs-label">VS</div>
                 </div>
 
-                <!-- Configuration B -->
                 <div class="config-card">
                     <div class="config-header">
                         <h2 class="config-title">Configuration B</h2>
@@ -122,7 +113,6 @@ set i_pitch = 52
                         <button class="tab-btn" onclick="switchTab('B', 'preset')">Preset</button>
                     </div>
 
-                    <!-- CLI Text Tab -->
                     <div class="tab-content active" id="tabB-text">
                         <div class="form-group">
                             <label class="form-label" for="cliInputB">Paste CLI Export</label>
@@ -136,7 +126,6 @@ set i_pitch = 52
                         </button>
                     </div>
 
-                    <!-- Preset Tab -->
                     <div class="tab-content" id="tabB-preset">
                         <div class="form-group">
                             <label class="form-label" for="presetSearchB">Search Presets</label>
@@ -144,10 +133,10 @@ set i_pitch = 52
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="presetSelectB">Choose Preset</label>
-                            <select class="form-control preset-select" id="presetSelectB" size="6">
-                                <option value="">Loading presets...</option>
-                            </select>
+                            <label class="form-label" for="presetResultsB">Choose Preset</label>
+                            <div class="preset-results" id="presetResultsB">
+                                <div class="preset-results-placeholder">Loading presets...</div>
+                            </div>
                         </div>
 
                         <div class="preset-options hidden" id="presetOptionsB">
@@ -167,7 +156,6 @@ set i_pitch = 52
                 </div>
             </div>
 
-            <!-- Results Section -->
             <div class="results-container hidden" id="resultsContainer">
                 <div class="results-header">
                     <h2 class="results-title">Comparison Results</h2>
@@ -178,7 +166,6 @@ set i_pitch = 52
                 </div>
 
                 <div class="results-content">
-                    <!-- Summary Tab -->
                     <div class="tab-content active" id="results-summary">
                         <div class="comparison-summary">
                             <h3 style="margin: 0 0 8px 0; color: #374151;">Comparison Overview</h3>
@@ -221,7 +208,6 @@ set i_pitch = 52
                 </div>
             </div>
 
-            <!-- Help Section -->
             <div style="background: rgba(255, 255, 255, 0.9); border-radius: 8px; padding: 16px; margin-top: 24px; font-size: 14px; color: #64748b; border: 1px solid #e2e8f0;">
                 <strong style="color: #374151;">How to use:</strong> Load configurations via CLI text or preset selection, then compare to see differences.
                 Presets with [number] have configurable options. Options marked with warning indicators use advanced templating and are not supported.
@@ -621,6 +607,7 @@ set i_pitch = 52
             loadPresets();
             updateUI();
             setupSearchListeners();
+            setupPresetResultsListeners();
         });
 
         function setupSearchListeners() {
@@ -637,19 +624,24 @@ set i_pitch = 52
         }
 
         function filterPresets(side, searchTerm) {
-            const select = document.getElementById(`presetSelect${side}`);
+            const resultsContainer = document.getElementById(`presetResults${side}`);
             const allPresets = side === 'A' ? allPresetsA : allPresetsB;
 
-            // Clear current options
-            select.innerHTML = '<option value="">Select a preset...</option>';
+            // Clear current selection visual if user is searching
+            const currentlySelected = resultsContainer.querySelector('.preset-item.selected');
+            if(currentlySelected) {
+                currentlySelected.classList.remove('selected');
+            }
+            if (side === 'A') { configA = null; } else { configB = null; }
+            hidePresetOptions(side);
+            updateUI();
+
 
             if (!searchTerm.trim()) {
-                // No search term, show all presets
-                populateSelectWithPresets(select, allPresets);
+                populatePresetResults(resultsContainer, allPresets);
                 return;
             }
 
-            // Filter presets based on search term
             const searchLower = searchTerm.toLowerCase();
             const filtered = allPresets.filter(preset => {
                 const title = preset.preset.title.toLowerCase();
@@ -657,14 +649,21 @@ set i_pitch = 52
                 const description = (preset.preset.description || '').toLowerCase();
 
                 return title.includes(searchLower) ||
-                       author.includes(searchLower) ||
-                       description.includes(searchLower);
+                    author.includes(searchLower) ||
+                    description.includes(searchLower);
             });
 
-            populateSelectWithPresets(select, filtered);
+            populatePresetResults(resultsContainer, filtered);
         }
 
-        function populateSelectWithPresets(select, presets) {
+        function populatePresetResults(resultsContainer, presets) {
+            resultsContainer.innerHTML = '';
+
+            if (presets.length === 0) {
+                resultsContainer.innerHTML = '<div class="preset-results-placeholder">No matching presets found.</div>';
+                return;
+            }
+
             const grouped = {};
 
             // Group presets by version
@@ -681,21 +680,28 @@ set i_pitch = 52
                 grouped[groupKey].sort((a, b) => a.preset.title.localeCompare(b.preset.title));
             }
 
-            // Add options to select
-            for (const [groupName, presets] of Object.entries(grouped)) {
-                if (presets.length > 0) {
-                    const optgroup = document.createElement('optgroup');
-                    optgroup.label = groupName;
+            // Add options to results container
+            for (const [groupName, groupPresets] of Object.entries(grouped)) {
+                if (groupPresets.length > 0) {
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'preset-group';
+                    groupDiv.textContent = groupName;
+                    resultsContainer.appendChild(groupDiv);
 
-                    for (const {key, preset} of presets) {
-                        const option = document.createElement('option');
-                        option.value = key;
+                    for (const { key, preset } of groupPresets) {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'preset-item';
+                        itemDiv.dataset.presetKey = key;
+
                         const optionsIndicator = preset.options && preset.options.length > 0 ? ` [${preset.options.length}]` : '';
-                        option.textContent = `${preset.title}${preset.author ? ` (${preset.author})` : ''}${optionsIndicator}`;
-                        optgroup.appendChild(option);
-                    }
+                        const authorHtml = preset.author ? `<span class="preset-item-author">by ${preset.author}</span>` : '';
 
-                    select.appendChild(optgroup);
+                        itemDiv.innerHTML = `
+                            <span class="preset-item-title">${preset.title}${optionsIndicator}</span>
+                            ${authorHtml}
+                        `;
+                        resultsContainer.appendChild(itemDiv);
+                    }
                 }
             }
         }
@@ -704,37 +710,32 @@ set i_pitch = 52
             const presetsStatus = document.getElementById('presetsStatus');
 
             try {
-                // Create progress display
                 showLoadingProgress();
-
                 const count = await parser.loadPresetsFromGitHub();
-                populatePresetDropdowns();
+                initializePresetSelection();
 
                 hideLoadingProgress();
                 presetsStatus.className = 'badge badge-success';
                 presetsStatus.innerHTML = `${count} presets loaded`;
-
                 presetsLoaded = true;
+
             } catch (error) {
                 console.error('Failed to load presets:', error);
                 hideLoadingProgress();
                 presetsStatus.className = 'badge badge-warning';
                 presetsStatus.innerHTML = 'Using fallback presets';
-                populatePresetDropdowns();
+                initializePresetSelection();
             }
         }
 
         function showLoadingProgress() {
-            const presetsStatus = document.getElementById('presetsStatus');
-            presetsStatus.innerHTML = '<div class="loading-spinner"></div> Loading presets...';
-
-            // Add progress container to main content
+            const mainContent = document.querySelector('.main-content');
             const progressHtml = `
                 <div class="progress-container" id="progressContainer">
                     <div class="progress-header">
                         <div class="progress-title">
                             <div class="loading-spinner"></div>
-                            <span id="progressTitle">Initializing preset loader...</span>
+                            <span id="progressTitle">Initializing...</span>
                         </div>
                         <div class="progress-stats" id="progressStats">0%</div>
                     </div>
@@ -747,96 +748,60 @@ set i_pitch = 52
                     </div>
                 </div>
             `;
-
-            // Insert progress after header but before main content
-            const mainContent = document.querySelector('.main-content');
             mainContent.insertAdjacentHTML('afterbegin', progressHtml);
         }
 
         function updateProgress(current, total, title, details, startTime = null) {
             const progressBar = document.getElementById('progressBar');
-            const progressStats = document.getElementById('progressStats');
-            const progressTitle = document.getElementById('progressTitle');
-            const progressDetails = document.getElementById('progressDetails');
-            const progressETA = document.getElementById('progressETA');
-
-            if (!progressBar) return; // Progress container not found
-
+            if (!progressBar) return;
             const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
-
             progressBar.style.width = `${percentage}%`;
-            progressStats.textContent = `${percentage}%`;
-            progressTitle.textContent = title;
-            progressDetails.textContent = details;
-
-            // Calculate ETA if we have a start time
-            if (startTime && current > 0 && current < total) {
-                const elapsed = Date.now() - startTime;
-                const rate = current / elapsed; // items per ms
-                const remaining = total - current;
-                const etaMs = remaining / rate;
-
-                if (etaMs > 0 && etaMs < 300000) { // Only show if less than 5 minutes
-                    const etaSeconds = Math.round(etaMs / 1000);
-                    if (etaSeconds < 60) {
-                        progressETA.textContent = `~${etaSeconds}s remaining`;
-                    } else {
-                        const etaMinutes = Math.round(etaSeconds / 60);
-                        progressETA.textContent = `~${etaMinutes}m remaining`;
-                    }
-                } else {
-                    progressETA.textContent = '';
-                }
-            } else {
-                progressETA.textContent = '';
-            }
+            document.getElementById('progressStats').textContent = `${percentage}%`;
+            document.getElementById('progressTitle').textContent = title;
+            document.getElementById('progressDetails').textContent = details;
         }
 
         function hideLoadingProgress() {
             const progressContainer = document.getElementById('progressContainer');
-            if (progressContainer) {
-                progressContainer.remove();
-            }
+            if (progressContainer) progressContainer.remove();
         }
 
-        function populatePresetDropdowns() {
-            const selectA = document.getElementById('presetSelectA');
-            const selectB = document.getElementById('presetSelectB');
+        function initializePresetSelection() {
+            const resultsA = document.getElementById('presetResultsA');
+            const resultsB = document.getElementById('presetResultsB');
 
-            // Prepare all presets data for filtering
             allPresetsA = [];
             allPresetsB = [];
 
             for (const [key, preset] of Object.entries(parser.presets)) {
-                allPresetsA.push({key, preset});
-                allPresetsB.push({key, preset});
+                allPresetsA.push({ key, preset });
+                allPresetsB.push({ key, preset });
             }
 
-            // Populate both dropdowns initially with all presets
-            [selectA, selectB].forEach((select, index) => {
-                const allPresets = index === 0 ? allPresetsA : allPresetsB;
-                populateSelectWithPresets(select, allPresets);
-            });
+            populatePresetResults(resultsA, allPresetsA);
+            populatePresetResults(resultsB, allPresetsB);
+        }
 
-            // Event listeners
-            selectA.addEventListener('change', function() {
-                if (this.value) {
-                    showPresetOptions('A', this.value);
-                } else {
-                    hidePresetOptions('A');
-                    configA = null;
-                    updateUI();
-                }
-            });
+        function setupPresetResultsListeners() {
+            const resultsA = document.getElementById('presetResultsA');
+            const resultsB = document.getElementById('presetResultsB');
 
-            selectB.addEventListener('change', function() {
-                if (this.value) {
-                    showPresetOptions('B', this.value);
-                } else {
-                    hidePresetOptions('B');
-                    configB = null;
-                    updateUI();
-                }
+            [resultsA, resultsB].forEach(container => {
+                const side = container.id.includes('A') ? 'A' : 'B';
+                container.addEventListener('click', function(event) {
+                    const target = event.target.closest('.preset-item');
+                    if (target && target.dataset.presetKey) {
+                        const presetKey = target.dataset.presetKey;
+
+                        const previouslySelected = container.querySelector('.preset-item.selected');
+                        if (previouslySelected) {
+                            previouslySelected.classList.remove('selected');
+                        }
+                        target.classList.add('selected');
+
+                        showPresetOptions(side, presetKey);
+                    }
+                });
             });
         }
 
@@ -848,6 +813,7 @@ set i_pitch = 52
 
             if (!preset || !preset.options || preset.options.length === 0) {
                 hidePresetOptions(side);
+                loadConfigFromPreset(side, presetKey); // Load directly if no options
                 return;
             }
 
@@ -870,7 +836,7 @@ set i_pitch = 52
                         <div class="option-item">
                             <div class="option-label-wrapper">
                                 <input type="checkbox" class="option-checkbox" id="${optionId}" ${option.checked ? 'checked' : ''}
-                                       onchange="onOptionChanged('${side}')">
+                                       onchange="onOptionChanged('${side}', '${presetKey}')">
                                 <label class="option-label" for="${optionId}">${option.name}</label>
                             </div>
                             <div class="option-settings">${settingsPreview}${moreSettings}</div>
@@ -881,11 +847,10 @@ set i_pitch = 52
                     html += `
                         <div class="option-item disabled">
                             <div class="option-label-wrapper">
-                                <input type="checkbox" class="option-checkbox" id="${optionId}" disabled
-                                       title="Uses advanced preset features not supported by this comparator">
+                                <input type="checkbox" class="option-checkbox" id="${optionId}" disabled>
                                 <label class="option-label disabled" for="${optionId}">${option.name}</label>
                             </div>
-                            <div class="option-unsupported">Uses advanced templating (includes, variables, etc.)</div>
+                            <div class="option-unsupported">Uses advanced templating (unsupported)</div>
                         </div>
                     `;
                 }
@@ -895,102 +860,59 @@ set i_pitch = 52
             summaryBadge.textContent = `${supportedCount} supported, ${unsupportedCount} unsupported`;
             optionsDiv.classList.remove('hidden');
 
-            loadConfigFromPreset(side);
+            loadConfigFromPreset(side, presetKey);
         }
 
         function hidePresetOptions(side) {
-            const optionsDiv = document.getElementById(`presetOptions${side}`);
-            optionsDiv.classList.add('hidden');
+            document.getElementById(`presetOptions${side}`).classList.add('hidden');
         }
 
-        function onOptionChanged(side) {
-            loadConfigFromPreset(side);
+        function onOptionChanged(side, presetKey) {
+            loadConfigFromPreset(side, presetKey);
         }
 
         function switchTab(side, tab) {
-            // Update tab buttons with immediate feedback
             const activeCard = document.querySelector(`#tab${side}-${tab}`).closest('.config-card');
             const buttons = activeCard.querySelectorAll('.tab-btn');
-
             buttons.forEach((btn, index) => {
                 btn.classList.toggle('active', index === (tab === 'text' ? 0 : 1));
             });
 
-            // Smooth tab content transition
-            const textTab = document.getElementById(`tab${side}-text`);
-            const presetTab = document.getElementById(`tab${side}-preset`);
-
-            textTab.classList.toggle('active', tab === 'text');
-            presetTab.classList.toggle('active', tab === 'preset');
+            document.getElementById(`tab${side}-text`).classList.toggle('active', tab === 'text');
+            document.getElementById(`tab${side}-preset`).classList.toggle('active', tab === 'preset');
         }
 
         function loadConfigFromText(side) {
             const textArea = document.getElementById(`cliInput${side}`);
-
             if (!textArea.value.trim()) {
                 alert(`Please paste CLI export data for Configuration ${side}!`);
                 return;
             }
 
             setLoadingState(side, true);
-
-            // Small delay to show loading state
             setTimeout(() => {
-                try {
-                    const tempParser = new BetaflightCLIParser();
-                    const result = tempParser.parse(textArea.value);
-
-                    const config = {
-                        type: 'text',
-                        title: `Custom CLI Export ${side}`,
-                        description: 'Loaded from CLI text',
-                        settings: new Map(tempParser.settings),
-                        metadata: {
-                            settingsCount: result.settingsCount,
-                            totalLines: result.totalLines
-                        }
-                    };
-
-                    if (side === 'A') {
-                        configA = config;
-                    } else {
-                        configB = config;
-                    }
-
-                    setLoadingState(side, false);
-                    updateUI();
-
-                } catch (error) {
-                    console.error('Error parsing CLI:', error);
-                    setLoadingState(side, false);
-                    alert(`Error parsing CLI: ${error.message}`);
-                }
+                const tempParser = new BetaflightCLIParser();
+                const result = tempParser.parse(textArea.value);
+                const config = {
+                    type: 'text',
+                    title: `Custom CLI Export ${side}`,
+                    settings: new Map(tempParser.settings),
+                    metadata: { settingsCount: result.settingsCount }
+                };
+                if (side === 'A') configA = config; else configB = config;
+                setLoadingState(side, false);
+                updateUI();
             }, 200);
         }
 
-        function loadConfigFromPreset(side) {
-            const presetSelect = document.getElementById(`presetSelect${side}`);
-            const selectedPreset = presetSelect.value;
-
-            if (!selectedPreset) {
-                if (side === 'A') {
-                    configA = null;
-                } else {
-                    configB = null;
-                }
-                updateUI();
-                return;
-            }
-
+        function loadConfigFromPreset(side, presetKey) {
+            if (!presetKey) return;
             setLoadingState(side, true);
 
-            // Small delay to show loading state
             setTimeout(() => {
-                const preset = parser.presets[selectedPreset];
+                const preset = parser.presets[presetKey];
                 if (!preset) {
-                    console.error('Preset not found:', selectedPreset);
-                    setLoadingState(side, false);
-                    return;
+                    setLoadingState(side, false); return;
                 }
 
                 const finalSettings = new Map(Object.entries(preset.settings));
@@ -999,11 +921,7 @@ set i_pitch = 52
                 if (preset.options && preset.options.length > 0) {
                     preset.options.forEach((option, index) => {
                         const optionCheckbox = document.getElementById(`option_${side}_${index}`);
-                        const isChecked = optionCheckbox && optionCheckbox.checked;
-                        const isDisabled = optionCheckbox && optionCheckbox.disabled;
-                        const hasSettings = option.settings && Object.keys(option.settings).length > 0;
-
-                        if (isChecked && !isDisabled && hasSettings) {
+                        if (optionCheckbox && optionCheckbox.checked && !optionCheckbox.disabled) {
                             for (const [key, value] of Object.entries(option.settings)) {
                                 finalSettings.set(key, value);
                             }
@@ -1017,102 +935,59 @@ set i_pitch = 52
                     title: preset.title,
                     description: preset.description,
                     settings: finalSettings,
-                    metadata: {
-                        author: preset.author,
-                        category: preset.category,
-                        version: preset.version,
-                        filename: preset.filename,
-                        optionsApplied: appliedOptions
-                    }
+                    metadata: { ...preset, optionsApplied: appliedOptions }
                 };
-
-                if (side === 'A') {
-                    configA = config;
-                } else {
-                    configB = config;
-                }
-
+                if (side === 'A') configA = config; else configB = config;
                 setLoadingState(side, false);
                 updateUI();
             }, 150);
         }
 
         function updateUI() {
-            // Update status badges and card states
+            // Config A
             const statusA = document.getElementById('statusA');
-            const statusB = document.getElementById('statusB');
             const configAStatus = document.getElementById('configAStatus');
-            const configBStatus = document.getElementById('configBStatus');
             const cardA = document.querySelector('.config-card:first-of-type');
-            const cardB = document.querySelector('.config-card:last-of-type');
-
             if (configA) {
-                statusA.textContent = 'Loaded';
-                statusA.className = 'config-status status-loaded';
-                configAStatus.textContent = `Config A: ${configA.title}`;
-                configAStatus.className = 'badge badge-success';
-                cardA.setAttribute('data-loaded', 'true');
-                cardA.removeAttribute('data-loading');
-
-                // Show config details with animation
+                statusA.textContent = 'Loaded'; statusA.className = 'config-status status-loaded';
+                configAStatus.textContent = `Config A: ${configA.title}`; configAStatus.className = 'badge badge-success';
+                cardA.setAttribute('data-loaded', 'true'); cardA.removeAttribute('data-loading');
                 const detailsA = document.getElementById('configDetailsA');
                 const infoA = document.getElementById('configInfoA');
-                detailsA.innerHTML = `
-                    <strong>${configA.title}</strong><br>
-                    ${configA.settings.size} settings loaded
-                    ${configA.metadata?.optionsApplied?.length ? `<br>Options: ${configA.metadata.optionsApplied.join(', ')}` : ''}
-                `;
+                detailsA.innerHTML = `<strong>${configA.title}</strong><br>${configA.settings.size} settings loaded ${configA.metadata?.optionsApplied?.length ? `<br>Options: ${configA.metadata.optionsApplied.join(', ')}` : ''}`;
                 infoA.style.display = 'block';
             } else {
-                statusA.textContent = 'Empty';
-                statusA.className = 'config-status status-empty';
-                configAStatus.textContent = 'Config A: Empty';
-                configAStatus.className = 'badge';
-                cardA.removeAttribute('data-loaded');
-                cardA.removeAttribute('data-loading');
+                statusA.textContent = 'Empty'; statusA.className = 'config-status status-empty';
+                configAStatus.textContent = 'Config A: Empty'; configAStatus.className = 'badge';
+                cardA.removeAttribute('data-loaded'); cardA.removeAttribute('data-loading');
                 document.getElementById('configInfoA').style.display = 'none';
             }
 
+            // Config B
+            const statusB = document.getElementById('statusB');
+            const configBStatus = document.getElementById('configBStatus');
+            const cardB = document.querySelector('.config-card:last-of-type');
             if (configB) {
-                statusB.textContent = 'Loaded';
-                statusB.className = 'config-status status-loaded';
-                configBStatus.textContent = `Config B: ${configB.title}`;
-                configBStatus.className = 'badge badge-success';
-                cardB.setAttribute('data-loaded', 'true');
-                cardB.removeAttribute('data-loading');
-
-                // Show config details with animation
+                statusB.textContent = 'Loaded'; statusB.className = 'config-status status-loaded';
+                configBStatus.textContent = `Config B: ${configB.title}`; configBStatus.className = 'badge badge-success';
+                cardB.setAttribute('data-loaded', 'true'); cardB.removeAttribute('data-loading');
                 const detailsB = document.getElementById('configDetailsB');
                 const infoB = document.getElementById('configInfoB');
-                detailsB.innerHTML = `
-                    <strong>${configB.title}</strong><br>
-                    ${configB.settings.size} settings loaded
-                    ${configB.metadata?.optionsApplied?.length ? `<br>Options: ${configB.metadata.optionsApplied.join(', ')}` : ''}
-                `;
+                detailsB.innerHTML = `<strong>${configB.title}</strong><br>${configB.settings.size} settings loaded ${configB.metadata?.optionsApplied?.length ? `<br>Options: ${configB.metadata.optionsApplied.join(', ')}` : ''}`;
                 infoB.style.display = 'block';
             } else {
-                statusB.textContent = 'Empty';
-                statusB.className = 'config-status status-empty';
-                configBStatus.textContent = 'Config B: Empty';
-                configBStatus.className = 'badge';
-                cardB.removeAttribute('data-loaded');
-                cardB.removeAttribute('data-loading');
+                statusB.textContent = 'Empty'; statusB.className = 'config-status status-empty';
+                configBStatus.textContent = 'Config B: Empty'; configBStatus.className = 'badge';
+                cardB.removeAttribute('data-loaded'); cardB.removeAttribute('data-loading');
                 document.getElementById('configInfoB').style.display = 'none';
             }
 
-            // Update compare buttons with smooth state transition
+            // Buttons and Stats
             const canCompare = configA && configB;
-            const compareBtn = document.getElementById('compareBtn');
-
-            compareBtn.disabled = !canCompare;
-
-            // Update quick stats
+            document.getElementById('compareBtn').disabled = !canCompare;
             const quickStats = document.getElementById('quickStats');
-            const totalSettings = document.getElementById('totalSettings');
-
             if (canCompare) {
-                const total = new Set([...configA.settings.keys(), ...configB.settings.keys()]).size;
-                totalSettings.textContent = total;
+                document.getElementById('totalSettings').textContent = new Set([...configA.settings.keys(), ...configB.settings.keys()]).size;
                 quickStats.classList.remove('hidden');
             } else {
                 quickStats.classList.add('hidden');
@@ -1120,92 +995,38 @@ set i_pitch = 52
         }
 
         function setLoadingState(side, isLoading) {
-            const card = side === 'A' ?
-                document.querySelector('.config-card:first-of-type') :
-                document.querySelector('.config-card:last-of-type');
+            const card = side === 'A' ? document.querySelector('.config-card:first-of-type') : document.querySelector('.config-card:last-of-type');
             const status = document.getElementById(`status${side}`);
             const badge = document.getElementById(`config${side}Status`);
-
             if (isLoading) {
-                card.setAttribute('data-loading', 'true');
-                card.removeAttribute('data-loaded');
-                status.textContent = 'Loading...';
-                status.className = 'config-status status-loading';
-                badge.textContent = `Config ${side}: Loading...`;
-                badge.className = 'badge badge-info';
-                badge.setAttribute('data-loading', 'true');
+                card.setAttribute('data-loading', 'true'); card.removeAttribute('data-loaded');
+                status.textContent = 'Loading...'; status.className = 'config-status status-loading';
+                badge.textContent = `Config ${side}: Loading...`; badge.className = 'badge badge-info';
             } else {
                 card.removeAttribute('data-loading');
-                badge.removeAttribute('data-loading');
             }
         }
 
         function compareConfigs() {
-            if (!configA || !configB) {
-                alert('Please load both configurations first!');
-                return;
-            }
-
+            if (!configA || !configB) return;
             const comparison = compareConfigurations(configA, configB);
             displayComparison(comparison);
-
-            // Show results
             document.getElementById('resultsContainer').classList.remove('hidden');
-
-            // Scroll to results
-            document.getElementById('resultsContainer').scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
+            document.getElementById('resultsContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function compareConfigurations(configA, configB) {
             const changes = [];
-            const settingsA = configA.settings;
-            const settingsB = configB.settings;
-
-            const allParams = new Set([...settingsA.keys(), ...settingsB.keys()]);
-
+            const allParams = new Set([...configA.settings.keys(), ...configB.settings.keys()]);
             for (const param of allParams) {
-                const valueA = settingsA.get(param);
-                const valueB = settingsB.get(param);
-
-                if (valueA === undefined && valueB !== undefined) {
-                    changes.push({
-                        parameter: param,
-                        type: 'only_b',
-                        valueA: null,
-                        valueB: valueB
-                    });
-                } else if (valueA !== undefined && valueB === undefined) {
-                    changes.push({
-                        parameter: param,
-                        type: 'only_a',
-                        valueA: valueA,
-                        valueB: null
-                    });
-                } else if (valueA !== valueB) {
-                    changes.push({
-                        parameter: param,
-                        type: 'different',
-                        valueA: valueA,
-                        valueB: valueB
-                    });
-                } else {
-                    changes.push({
-                        parameter: param,
-                        type: 'same',
-                        valueA: valueA,
-                        valueB: valueB
-                    });
-                }
+                const valueA = configA.settings.get(param);
+                const valueB = configB.settings.get(param);
+                if (valueA === undefined) changes.push({ parameter: param, type: 'only_b', valueA: null, valueB: valueB });
+                else if (valueB === undefined) changes.push({ parameter: param, type: 'only_a', valueA: valueA, valueB: null });
+                else if (valueA !== valueB) changes.push({ parameter: param, type: 'different', valueA: valueA, valueB: valueB });
+                else changes.push({ parameter: param, type: 'same', valueA: valueA, valueB: valueB });
             }
-
-            return {
-                configA: configA,
-                configB: configB,
-                changes: changes
-            };
+            return { configA, configB, changes };
         }
 
         function displayComparison(comparison) {
@@ -1214,103 +1035,44 @@ set i_pitch = 52
             const onlyB = comparison.changes.filter(c => c.type === 'only_b');
             const same = comparison.changes.filter(c => c.type === 'same');
 
-            // Update summary numbers
             document.getElementById('differentCount').textContent = different.length;
             document.getElementById('onlyACount').textContent = onlyA.length;
             document.getElementById('onlyBCount').textContent = onlyB.length;
             document.getElementById('sameCount').textContent = same.length;
+            document.getElementById('comparisonMetadata').innerHTML = `<strong>A:</strong> ${comparison.configA.title} • <strong>B:</strong> ${comparison.configB.title}`;
 
-            // Update metadata
-            const metadata = document.getElementById('comparisonMetadata');
-            metadata.innerHTML = `
-                <strong>A:</strong> ${comparison.configA.title} •
-                <strong>B:</strong> ${comparison.configB.title}
-            `;
-
-            // Display differences
             let diffHtml = '';
-
             if (different.length > 0) {
-                different.sort((a, b) => {
-                    const pidParams = ['p_pitch', 'i_pitch', 'd_pitch', 'p_roll', 'i_roll', 'd_roll', 'p_yaw', 'i_yaw', 'd_yaw', 'f_pitch', 'f_roll', 'f_yaw'];
-                    const aIsPid = pidParams.includes(a.parameter);
-                    const bIsPid = pidParams.includes(b.parameter);
-                    if (aIsPid && !bIsPid) return -1;
-                    if (!aIsPid && bIsPid) return 1;
-                    return a.parameter.localeCompare(b.parameter);
-                });
-
                 diffHtml += '<div class="diff-section"><div class="diff-header">Different Values</div>';
-                for (const change of different) {
-                    diffHtml += `
-                        <div class="diff-item diff-changed">
-                            <span class="setting-name">${change.parameter}</span>
-                            <div class="setting-values">
-                                <span class="value-a">A: ${change.valueA}</span>
-                                →
-                                <span class="value-b">B: ${change.valueB}</span>
-                            </div>
-                        </div>
-                    `;
-                }
+                different.sort((a,b) => a.parameter.localeCompare(b.parameter)).forEach(c => {
+                    diffHtml += `<div class="diff-item diff-changed"><span class="setting-name">${c.parameter}</span><div class="setting-values"><span class="value-a">A: ${c.valueA}</span> → <span class="value-b">B: ${c.valueB}</span></div></div>`;
+                });
                 diffHtml += '</div>';
             }
-
             if (onlyA.length > 0) {
                 diffHtml += '<div class="diff-section"><div class="diff-header">Only in Configuration A</div>';
-                for (const change of onlyA) {
-                    diffHtml += `
-                        <div class="diff-item diff-only-a">
-                            <span class="setting-name">${change.parameter}</span>
-                            <span class="value-a">${change.valueA}</span>
-                        </div>
-                    `;
-                }
+                onlyA.sort((a,b) => a.parameter.localeCompare(b.parameter)).forEach(c => {
+                    diffHtml += `<div class="diff-item diff-only-a"><span class="setting-name">${c.parameter}</span><span class="value-a">${c.valueA}</span></div>`;
+                });
                 diffHtml += '</div>';
             }
-
             if (onlyB.length > 0) {
                 diffHtml += '<div class="diff-section"><div class="diff-header">Only in Configuration B</div>';
-                for (const change of onlyB) {
-                    diffHtml += `
-                        <div class="diff-item diff-only-b">
-                            <span class="setting-name">${change.parameter}</span>
-                            <span class="value-b">${change.valueB}</span>
-                        </div>
-                    `;
-                }
+                onlyB.sort((a,b) => a.parameter.localeCompare(b.parameter)).forEach(c => {
+                    diffHtml += `<div class="diff-item diff-only-b"><span class="setting-name">${c.parameter}</span><span class="value-b">${c.valueB}</span></div>`;
+                });
                 diffHtml += '</div>';
             }
-
-            if (same.length > 0 && same.length <= 10) {
-                diffHtml += '<div class="diff-section"><div class="diff-header">Identical Values</div>';
-                for (const change of same) {
-                    diffHtml += `
-                        <div class="diff-item diff-same">
-                            <span class="setting-name">${change.parameter}</span>
-                            <span>${change.valueA}</span>
-                        </div>
-                    `;
-                }
-                diffHtml += '</div>';
-            } else if (same.length > 10) {
-                diffHtml += `<div class="diff-section"><div class="diff-header">${same.length} Identical Values</div></div>`;
-            }
-
             if (different.length === 0 && onlyA.length === 0 && onlyB.length === 0) {
                 diffHtml = '<div class="text-center" style="padding: 40px; color: #16a34a; font-weight: 500;">Configurations are identical!</div>';
             }
-
             document.getElementById('comparisonDiff').innerHTML = diffHtml;
-
-            // Generate individual configs
             generateIndividualConfigs(comparison);
         }
 
         function generateIndividualConfigs(comparison) {
             const categorizedA = categorizeSettings(comparison.configA.settings);
             const categorizedB = categorizeSettings(comparison.configB.settings);
-
             document.getElementById('categorizedSettingsA').innerHTML = renderCategorizedSettings(categorizedA);
             document.getElementById('categorizedSettingsB').innerHTML = renderCategorizedSettings(categorizedB);
         }
@@ -1319,113 +1081,58 @@ set i_pitch = 52
             const categories = parser.categories;
             const categorized = {};
             const foundSettings = new Set();
-
-            for (const [categoryName, parameters] of Object.entries(categories)) {
-                categorized[categoryName] = [];
-            }
-
-            for (const [categoryName, parameters] of Object.entries(categories)) {
-                if (categoryName === 'Other') continue;
-
-                for (const param of parameters) {
-                    if (settings.has(param)) {
-                        categorized[categoryName].push({
-                            parameter: param,
-                            value: settings.get(param)
-                        });
-                        foundSettings.add(param);
-                    }
-                }
-            }
+            for (const categoryName of Object.keys(categories)) { categorized[categoryName] = []; }
 
             for (const [param, value] of settings) {
-                if (!foundSettings.has(param)) {
-                    categorized['Other'].push({
-                        parameter: param,
-                        value: value
-                    });
+                let found = false;
+                for (const [categoryName, parameters] of Object.entries(categories)) {
+                    if (parameters.includes(param)) {
+                        categorized[categoryName].push({ parameter: param, value: value });
+                        found = true;
+                        break;
+                    }
                 }
+                if (!found) categorized['Other'].push({ parameter: param, value: value });
             }
-
-            for (const categoryName of Object.keys(categorized)) {
-                if (categorized[categoryName].length === 0) {
-                    delete categorized[categoryName];
-                }
-            }
-
-            return categorized;
+            return Object.fromEntries(Object.entries(categorized).filter(([_, v]) => v.length > 0));
         }
 
         function renderCategorizedSettings(categorized) {
             let html = '';
-
             for (const [categoryName, settings] of Object.entries(categorized)) {
-                html += `
-                    <div style="margin-bottom: 20px;">
-                        <h4 style="color: #374151; font-size: 14px; font-weight: 600; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #e5e7eb;">
-                            ${categoryName} (${settings.length})
-                        </h4>
-                        <div style="font-size: 12px; font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;">
-                `;
-
-                for (const setting of settings) {
-                    html += `
-                        <div style="display: flex; justify-content: space-between; padding: 2px 0; color: #6b7280;">
-                            <span style="color: #374151; font-weight: 500;">${setting.parameter}</span>
-                            <span>${setting.value}</span>
-                        </div>
-                    `;
-                }
-
+                html += `<div style="margin-bottom: 20px;"><h4 style="color: #374151; font-size: 14px; font-weight: 600; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #e5e7eb;">${categoryName} (${settings.length})</h4><div style="font-size: 12px; font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;">`;
+                settings.forEach(s => {
+                    html += `<div style="display: flex; justify-content: space-between; padding: 2px 0; color: #6b7280;"><span style="color: #374151; font-weight: 500;">${s.parameter}</span><span>${s.value}</span></div>`;
+                });
                 html += '</div></div>';
             }
-
             return html;
         }
 
         function showResultsTab(tab) {
             currentResultsTab = tab;
-
-            // Update nav buttons
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
-
-            // Update content
-            document.querySelectorAll('#resultsContainer .tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
+            document.querySelectorAll('#resultsContainer .tab-content').forEach(c => c.classList.remove('active'));
             document.getElementById(`results-${tab}`).classList.add('active');
         }
 
         function clearAll() {
-            configA = null;
-            configB = null;
-
-            // Clear inputs
+            configA = null; configB = null;
             document.getElementById('cliInputA').value = '';
             document.getElementById('cliInputB').value = '';
-            document.getElementById('presetSelectA').value = '';
-            document.getElementById('presetSelectB').value = '';
             document.getElementById('presetSearchA').value = '';
             document.getElementById('presetSearchB').value = '';
 
-            // Reset preset dropdowns to show all presets
             filterPresets('A', '');
             filterPresets('B', '');
 
-            // Hide options
             hidePresetOptions('A');
             hidePresetOptions('B');
-
-            // Hide results
             document.getElementById('resultsContainer').classList.add('hidden');
-
             updateUI();
         }
 
-        // Sync header buttons with main buttons
         document.getElementById('compareBtn').addEventListener('click', compareConfigs);
         document.getElementById('clearBtn').addEventListener('click', clearAll);
     </script>
