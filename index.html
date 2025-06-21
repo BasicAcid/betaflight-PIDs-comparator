@@ -62,6 +62,7 @@
                     <div class="input-tabs">
                         <button class="tab-btn active" onclick="switchTab('A', 'text')">CLI Text</button>
                         <button class="tab-btn" onclick="switchTab('A', 'preset')">Preset</button>
+                        <button class="tab-btn" onclick="switchTab('A', 'device')">Connect Device</button>
                     </div>
 
                     <!-- CLI Text Tab -->
@@ -106,6 +107,36 @@ set i_pitch = 52
                         </div>
                     </div>
 
+                    <!-- Device Connection Tab -->
+                    <div class="tab-content" id="tabA-device">
+                        <div class="form-group">
+                            <label class="form-label">Connect Flight Controller</label>
+                            <div style="font-size: 13px; color: #6b7280; margin-bottom: 12px;">
+                                Connect your Betaflight flight controller via USB to read configuration directly.
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                                <button class="btn btn-primary" id="connectBtnA" onclick="connectDevice('A')">
+                                    Connect Device
+                                </button>
+                                <button class="btn btn-secondary" id="disconnectBtnA" onclick="disconnectDevice('A')" disabled>
+                                    Disconnect
+                                </button>
+                            </div>
+                            <div id="deviceStatusA" style="font-size: 13px; color: #6b7280; padding: 8px 12px; background: #f9fafb; border-radius: 6px;">
+                                Not connected
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <button class="btn btn-primary" id="readConfigBtnA" onclick="readDeviceConfig('A')" disabled>
+                                Read Configuration
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="form-group mt-4" id="configInfoA" style="display: none;">
                         <div style="font-size: 13px; color: #6b7280; padding: 8px 12px; background: #f9fafb; border-radius: 6px;">
                             <div id="configDetailsA"></div>
@@ -128,6 +159,7 @@ set i_pitch = 52
                     <div class="input-tabs">
                         <button class="tab-btn active" onclick="switchTab('B', 'text')">CLI Text</button>
                         <button class="tab-btn" onclick="switchTab('B', 'preset')">Preset</button>
+                        <button class="tab-btn" onclick="switchTab('B', 'device')">Connect Device</button>
                     </div>
 
                     <!-- CLI Text Tab -->
@@ -165,6 +197,36 @@ set i_pitch = 52
                                 <span class="badge badge-info" id="optionsSummaryB"></span>
                             </div>
                             <div id="optionsListB"></div>
+                        </div>
+                    </div>
+
+                    <!-- Device Connection Tab -->
+                    <div class="tab-content" id="tabB-device">
+                        <div class="form-group">
+                            <label class="form-label">Connect Flight Controller</label>
+                            <div style="font-size: 13px; color: #6b7280; margin-bottom: 12px;">
+                                Connect your Betaflight flight controller via USB to read configuration directly.
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                                <button class="btn btn-primary" id="connectBtnB" onclick="connectDevice('B')">
+                                    Connect Device
+                                </button>
+                                <button class="btn btn-secondary" id="disconnectBtnB" onclick="disconnectDevice('B')" disabled>
+                                    Disconnect
+                                </button>
+                            </div>
+                            <div id="deviceStatusB" style="font-size: 13px; color: #6b7280; padding: 8px 12px; background: #f9fafb; border-radius: 6px;">
+                                Not connected
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <button class="btn btn-primary" id="readConfigBtnB" onclick="readDeviceConfig('B')" disabled>
+                                Read Configuration
+                            </button>
                         </div>
                     </div>
 
@@ -232,8 +294,8 @@ set i_pitch = 52
 
             <!-- Help Section -->
             <div style="background: rgba(255, 255, 255, 0.9); border-radius: 8px; padding: 16px; margin-top: 24px; font-size: 14px; color: #64748b; border: 1px solid #e2e8f0;">
-                <strong style="color: #374151;">How to use:</strong> Load configurations via CLI text or preset selection, then compare to see differences.
-                Presets with [number] have configurable options. Options marked with warning indicators use advanced templating and are not supported.
+                <strong style="color: #374151;">How to use:</strong> Load configurations via CLI text, preset selection, or direct device connection, then compare to see differences.
+                Presets with [number] have configurable options. The "Connect Device" tab allows direct reading from flight controllers via USB.
             </div>
 
             <!-- Support Section -->
@@ -305,6 +367,623 @@ set i_pitch = 52
                 }, 2000);
             });
         }
+
+        // Device connection management
+        class DeviceConnection {
+            constructor(side) {
+                this.side = side;
+                this.port = null;
+                this.reader = null;
+                this.writer = null;
+                this.isConnected = false;
+                this.config = {
+                    version: '',
+                    variant: '',
+                    fcVersion: '',
+                    board: '',
+                    features: [],
+                    pids: {},
+                    rates: {},
+                    misc: {},
+                    modes: []
+                };
+            }
+
+            async connect() {
+                if (!('serial' in navigator)) {
+                    this.updateStatus('Web Serial API not supported. Use Chrome, Edge, or Opera.', 'error');
+                    return false;
+                }
+
+                try {
+                    this.updateStatus('Connecting...', 'connecting');
+
+                    this.port = await navigator.serial.requestPort();
+                    await this.port.open({ baudRate: 115200 });
+                    this.reader = this.port.readable.getReader();
+                    this.writer = this.port.writable.getWriter();
+                    this.isConnected = true;
+
+                    this.updateStatus('Connected to flight controller', 'connected');
+                    this.updateButtons(true);
+
+                    return true;
+                } catch (error) {
+                    this.updateStatus(`Connection failed: ${error.message}`, 'error');
+                    return false;
+                }
+            }
+
+            async disconnect() {
+                try {
+                    if (this.reader) {
+                        await this.reader.cancel();
+                        await this.reader.releaseLock();
+                        this.reader = null;
+                    }
+
+                    if (this.writer) {
+                        await this.writer.releaseLock();
+                        this.writer = null;
+                    }
+
+                    if (this.port) {
+                        await this.port.close();
+                        this.port = null;
+                    }
+
+                    this.isConnected = false;
+                    this.updateStatus('Disconnected', 'disconnected');
+                    this.updateButtons(false);
+                } catch (error) {
+                    console.error('Disconnect error:', error);
+                }
+            }
+
+            async readConfiguration() {
+                if (!this.isConnected) {
+                    this.updateStatus('Not connected to device', 'error');
+                    return null;
+                }
+
+                this.updateStatus('Reading configuration...', 'reading');
+                this.config = {};
+
+                try {
+                    // Comprehensive list of MSP commands for complete configuration
+                    const commands = [
+                        { cmd: 1, name: 'API_VERSION' },
+                        { cmd: 2, name: 'FC_VARIANT' },
+                        { cmd: 3, name: 'FC_VERSION' },
+                        { cmd: 4, name: 'BOARD_INFO' },
+                        { cmd: 5, name: 'BUILD_INFO' },
+                        { cmd: 6, name: 'UID' },
+                        { cmd: 30, name: 'SERIAL_CONFIG' },
+                        { cmd: 34, name: 'MODE_RANGES' },
+                        { cmd: 36, name: 'FEATURE_CONFIG' },
+                        { cmd: 88, name: 'VTX_CONFIG' },
+                        { cmd: 23, name: 'MISC' },
+                        { cmd: 112, name: 'PID' },
+                        { cmd: 111, name: 'RC_TUNING' },
+                        { cmd: 116, name: 'BOXNAMES' },
+                        { cmd: 119, name: 'BOXIDS' },
+                        { cmd: 52, name: 'ADJUSTMENT_RANGES' },
+                        { cmd: 150, name: 'ADVANCED_CONFIG' },
+                        { cmd: 151, name: 'FILTER_CONFIG' },
+                        { cmd: 152, name: 'PID_ADVANCED' },
+                        { cmd: 154, name: 'SENSOR_CONFIG' },
+                        { cmd: 158, name: 'ARMING_CONFIG' },
+                        { cmd: 160, name: 'RX_CONFIG' },
+                        { cmd: 64, name: 'MOTOR_CONFIG' },
+                        { cmd: 58, name: 'GPS_CONFIG' },
+                        { cmd: 48, name: 'COMPASS_CONFIG' }
+                    ];
+
+                    for (const { cmd, name } of commands) {
+                        await this.readMSP(cmd, name);
+                        await this.sleep(100);
+                    }
+
+                    await this.sleep(200);
+
+                    // Generate CLI format configuration
+                    const cliConfig = this.generateCLIConfig();
+                    this.updateStatus('Configuration read successfully', 'connected');
+
+                    return cliConfig;
+                } catch (error) {
+                    this.updateStatus(`Read failed: ${error.message}`, 'error');
+                    return null;
+                }
+            }
+
+            async readMSP(cmd, name) {
+                try {
+                    const message = this.createMSPMessage(cmd);
+                    await this.writer.write(message);
+
+                    await this.sleep(50);
+                    const { value } = await this.reader.read();
+                    if (value) {
+                        this.parseMSPResponse(cmd, Array.from(value), name);
+                    }
+                } catch (e) {
+                    console.log(`Failed to read ${name}:`, e);
+                }
+            }
+
+            createMSPMessage(command) {
+                const header = [36, 77, 60]; // "$M<"
+                const dataLength = 0;
+                const checksum = dataLength ^ command;
+                return new Uint8Array([...header, dataLength, command, checksum]);
+            }
+
+            parseMSPResponse(cmd, data, name) {
+                if (data.length < 6 || data[0] !== 36 || data[1] !== 77 || data[2] !== 62) return;
+
+                const dataLength = data[3];
+                const command = data[4];
+                const payload = data.slice(5, 5 + dataLength);
+
+                switch (command) {
+                    case 1: // API_VERSION
+                        if (payload.length >= 3) {
+                            this.config.apiVersion = `${payload[1]}.${payload[2]}`;
+                        }
+                        break;
+
+                    case 2: // FC_VARIANT
+                        this.config.fcVariant = String.fromCharCode(...payload);
+                        break;
+
+                    case 3: // FC_VERSION
+                        if (payload.length >= 3) {
+                            this.config.fcVersion = `${payload[0]}.${payload[1]}.${payload[2]}`;
+                        }
+                        break;
+
+                    case 4: // BOARD_INFO
+                        if (payload.length >= 9) {
+                            this.config.boardIdentifier = String.fromCharCode(...payload.slice(0, 4)).replace(/\0/g, '');
+                            this.config.hardwareRevision = payload[4] | (payload[5] << 8);
+
+                            if (payload.length > 20) {
+                                let offset = 9;
+                                const boardNameLength = payload[offset];
+                                offset++;
+                                if (boardNameLength > 0 && offset + boardNameLength <= payload.length) {
+                                    this.config.boardName = String.fromCharCode(...payload.slice(offset, offset + boardNameLength));
+                                    offset += boardNameLength;
+                                }
+
+                                if (offset + 4 <= payload.length) {
+                                    this.config.manufacturerId = String.fromCharCode(...payload.slice(offset, offset + 4)).replace(/\0/g, '');
+                                }
+                            }
+                        }
+                        break;
+
+                    case 5: // BUILD_INFO
+                        if (payload.length >= 19) {
+                            this.config.buildDate = String.fromCharCode(...payload.slice(0, 11));
+                            this.config.buildTime = String.fromCharCode(...payload.slice(11, 19));
+                            if (payload.length > 19) {
+                                this.config.gitRevision = String.fromCharCode(...payload.slice(19));
+                            }
+                        }
+                        break;
+
+                    case 6: // UID
+                        this.config.mcuId = Array.from(payload).map(b => b.toString(16).padStart(2, '0')).join('');
+                        break;
+
+                    case 30: // SERIAL_CONFIG
+                        this.config.serialConfig = [];
+                        for (let i = 0; i < payload.length; i += 7) {
+                            if (i + 6 < payload.length) {
+                                this.config.serialConfig.push({
+                                    port: payload[i],
+                                    functions: payload[i + 1] | (payload[i + 2] << 8) | (payload[i + 3] << 16) | (payload[i + 4] << 24),
+                                    baudrate: payload[i + 5] | (payload[i + 6] << 8)
+                                });
+                            }
+                        }
+                        break;
+
+                    case 34: // MODE_RANGES
+                        this.config.modeRanges = [];
+                        for (let i = 0; i < payload.length; i += 4) {
+                            if (i + 3 < payload.length) {
+                                this.config.modeRanges.push({
+                                    id: payload[i],
+                                    auxChannelIndex: payload[i + 1],
+                                    rangeStart: payload[i + 2] * 25 + 900,
+                                    rangeEnd: payload[i + 3] * 25 + 900
+                                });
+                            }
+                        }
+                        break;
+
+                    case 36: // FEATURE_CONFIG
+                        if (payload.length >= 4) {
+                            this.config.features = payload[0] | (payload[1] << 8) | (payload[2] << 16) | (payload[3] << 24);
+                        }
+                        break;
+
+                    case 112: // PID
+                        this.config.pidValues = [];
+                        for (let i = 0; i < payload.length; i += 3) {
+                            if (i + 2 < payload.length) {
+                                this.config.pidValues.push({
+                                    p: payload[i],
+                                    i: payload[i + 1],
+                                    d: payload[i + 2]
+                                });
+                            }
+                        }
+                        break;
+
+                    case 111: // RC_TUNING
+                        if (payload.length >= 23) {
+                            this.config.rcTuning = {
+                                rcRate: payload[0],
+                                rcExpo: payload[1],
+                                rollPitchRate: payload[2],
+                                yawRate: payload[3],
+                                dynThrPID: payload[4],
+                                thrMid: payload[5],
+                                thrExpo: payload[6],
+                                tpaBreakpoint: payload[7] | (payload[8] << 8),
+                                rcYawExpo: payload[9],
+                                rcYawRate: payload[10],
+                                rcPitchRate: payload[11],
+                                rcPitchExpo: payload[12]
+                            };
+                        }
+                        break;
+
+                    case 88: // VTX_CONFIG
+                        if (payload.length >= 15) {
+                            this.config.vtx = {
+                                type: payload[0],
+                                band: payload[1],
+                                channel: payload[2],
+                                power: payload[3],
+                                pitmode: payload[4],
+                                freq: payload[5] | (payload[6] << 8),
+                                deviceReady: payload[7],
+                                lowPowerDisarm: payload[8],
+                                pitModeFreq: payload[9] | (payload[10] << 8),
+                                table: {
+                                    bands: payload[11],
+                                    channels: payload[12],
+                                    powerLevels: payload[13]
+                                }
+                            };
+                        }
+                        break;
+
+                    case 23: // MISC
+                        if (payload.length >= 22) {
+                            this.config.misc = {
+                                midrc: payload[0] | (payload[1] << 8),
+                                minthrottle: payload[2] | (payload[3] << 8),
+                                maxthrottle: payload[4] | (payload[5] << 8),
+                                mincommand: payload[6] | (payload[7] << 8),
+                                failsafe_throttle: payload[8] | (payload[9] << 8),
+                                gps_type: payload[10],
+                                gps_baudrate: payload[11],
+                                battery_cells: payload[13],
+                                vbatscale: payload[14] | (payload[15] << 8),
+                                vbatlevel_warn1: payload[16],
+                                vbatlevel_warn2: payload[17],
+                                vbatlevel_crit: payload[18]
+                            };
+                        }
+                        break;
+
+                    case 116: // BOXNAMES
+                        this.config.boxNames = String.fromCharCode(...payload).split(';').filter(name => name.length > 0);
+                        break;
+
+                    case 64: // MOTOR_CONFIG
+                        if (payload.length >= 6) {
+                            this.config.motorConfig = {
+                                minthrottle: payload[0] | (payload[1] << 8),
+                                maxthrottle: payload[2] | (payload[3] << 8),
+                                mincommand: payload[4] | (payload[5] << 8)
+                            };
+                        }
+                        break;
+                }
+            }
+
+            generateCLIConfig() {
+                let output = 'defaults nosave\n\n\n';
+
+                // Version header
+                output += `# version\n`;
+                const boardInfo = this.config.boardName || this.config.boardIdentifier || 'UNKNOWN';
+                const variant = this.config.fcVariant || 'BTFL';
+                output += `# ${variant} / ${boardInfo} (${this.config.boardIdentifier}) ${this.config.fcVersion} `;
+                if (this.config.buildDate && this.config.buildTime) {
+                    output += `${this.config.buildDate} / ${this.config.buildTime} `;
+                }
+                if (this.config.gitRevision) {
+                    output += `(${this.config.gitRevision.substring(0, 8)}) `;
+                }
+                output += `MSP API: ${this.config.apiVersion}\n`;
+                output += `# config rev: master\n\n`;
+
+                output += `# start the command batch\nbatch start\n\n`;
+                output += `# reset configuration to default settings\ndefaults nosave\n\n`;
+
+                // Board identification
+                if (this.config.boardName) {
+                    output += `board_name ${this.config.boardName}\n`;
+                }
+                if (this.config.manufacturerId) {
+                    output += `manufacturer_id ${this.config.manufacturerId}\n`;
+                }
+                if (this.config.mcuId) {
+                    output += `mcu_id ${this.config.mcuId}\n`;
+                }
+                output += `signature\n\n`;
+
+                // Features
+                if (this.config.features !== undefined) {
+                    output += `# feature\n`;
+                    const featureNames = [
+                        'RX_PPM', 'VBAT', 'INFLIGHT_ACC_CAL', 'RX_SERIAL', 'MOTOR_STOP',
+                        'SERVO_TILT', 'SOFTSERIAL', 'GPS', 'FAILSAFE', 'SONAR',
+                        'TELEMETRY', 'CURRENT_METER', 'DEBUG_TRACE', 'RSSI_ADC', 'LED_STRIP',
+                        'DISPLAY', 'OSD', 'BLACKBOX', 'CHANNEL_FORWARDING', 'TRANSPONDER',
+                        'AIRMODE', 'SUPEREXPO_RATES', 'VTX', 'RX_SPI', 'SOFTSPI',
+                        'ESC_SENSOR', 'ANTI_GRAVITY', 'DYNAMIC_FILTER'
+                    ];
+
+                    featureNames.forEach((feature, index) => {
+                        if (this.config.features & (1 << index)) {
+                            output += `feature ${feature}\n`;
+                        }
+                    });
+                    output += '\n';
+                }
+
+                // Serial configuration
+                if (this.config.serialConfig && this.config.serialConfig.length > 0) {
+                    output += `# serial\n`;
+                    this.config.serialConfig.forEach(serial => {
+                        if (serial.functions > 0) {
+                            output += `serial ${serial.port} ${serial.functions} 115200 57600 0 115200\n`;
+                        }
+                    });
+                    output += '\n';
+                }
+
+                // Mode ranges (aux)
+                if (this.config.modeRanges && this.config.modeRanges.length > 0) {
+                    output += `# aux\n`;
+                    this.config.modeRanges.forEach(mode => {
+                        if (mode.rangeStart < mode.rangeEnd) {
+                            output += `aux ${mode.id} ${mode.id} ${mode.auxChannelIndex} ${mode.rangeStart} ${mode.rangeEnd} 0 0\n`;
+                        }
+                    });
+                    output += '\n';
+                }
+
+                // VTX Table (basic version)
+                if (this.config.vtx) {
+                    output += `# vtxtable\n`;
+                    output += `vtxtable bands 4\n`;
+                    output += `vtxtable channels 8\n`;
+                    output += `vtxtable band 1 BOSCAM_A A CUSTOM  5865 5845 5825 5805 5785 5765 5745    0\n`;
+                    output += `vtxtable band 2 BOSCAM_B B CUSTOM  5733 5752 5771 5790 5809 5828 5847 5866\n`;
+                    output += `vtxtable band 3 FATSHARK F CUSTOM  5740 5760 5780 5800 5820 5840 5860    0\n`;
+                    output += `vtxtable band 4 RACEBAND R CUSTOM     0    0    0 5769 5806 5843    0    0\n`;
+                    output += `vtxtable powerlevels 5\n`;
+                    output += `vtxtable powervalues 25 200 400 600 600\n`;
+                    output += `vtxtable powerlabels 25 200 400 800 800\n\n`;
+                }
+
+                output += `# master\n`;
+
+                // Common settings with defaults
+                output += `set gyro_lpf1_static_hz = 0\n`;
+                output += `set gyro_lpf2_static_hz = 800\n`;
+                output += `set dyn_notch_count = 2\n`;
+                output += `set dyn_notch_q = 400\n`;
+                output += `set dyn_notch_min_hz = 120\n`;
+                output += `set dyn_notch_max_hz = 800\n`;
+                output += `set blackbox_sample_rate = 1/2\n`;
+                output += `set dshot_bidir = ON\n`;
+                output += `set motor_pwm_protocol = DSHOT300\n`;
+                output += `set small_angle = 30\n`;
+                output += `set pid_process_denom = 2\n`;
+                output += `set report_cell_voltage = ON\n`;
+
+                // Misc settings
+                if (this.config.misc) {
+                    output += `set midrc = ${this.config.misc.midrc}\n`;
+                    output += `set min_throttle = ${this.config.misc.minthrottle}\n`;
+                    output += `set max_throttle = ${this.config.misc.maxthrottle}\n`;
+                    output += `set min_command = ${this.config.misc.mincommand}\n`;
+                    output += `set failsafe_throttle = ${this.config.misc.failsafe_throttle}\n`;
+                    if (this.config.misc.battery_cells > 0) {
+                        output += `set battery_cells = ${this.config.misc.battery_cells}\n`;
+                    }
+                    if (this.config.misc.vbatscale > 0) {
+                        output += `set vbat_scale = ${this.config.misc.vbatscale}\n`;
+                    }
+                    if (this.config.misc.vbatlevel_warn1 > 0) {
+                        output += `set vbat_warning1 = ${this.config.misc.vbatlevel_warn1}\n`;
+                    }
+                }
+
+                // Motor config
+                if (this.config.motorConfig) {
+                    output += `set min_throttle = ${this.config.motorConfig.minthrottle}\n`;
+                    output += `set max_throttle = ${this.config.motorConfig.maxthrottle}\n`;
+                    output += `set min_command = ${this.config.motorConfig.mincommand}\n`;
+                }
+
+                // VTX settings
+                if (this.config.vtx) {
+                    output += `set vtx_band = ${this.config.vtx.band}\n`;
+                    output += `set vtx_channel = ${this.config.vtx.channel}\n`;
+                    output += `set vtx_power = ${this.config.vtx.power}\n`;
+                    output += `set vtx_freq = ${this.config.vtx.freq}\n`;
+                    if (this.config.vtx.lowPowerDisarm !== undefined) {
+                        output += `set vtx_low_power_disarm = ${this.config.vtx.lowPowerDisarm ? 'ON' : 'OFF'}\n`;
+                    }
+                }
+
+                // RC Tuning settings
+                if (this.config.rcTuning) {
+                    output += `set rc_smoothing_auto_factor = 45\n`;
+                    output += `set rc_smoothing_auto_factor_throttle = 45\n`;
+                }
+
+                output += '\nprofile 0\n\n';
+                output += '# profile 0\n';
+                output += 'set profile_name = device_export\n';
+
+                // Advanced PID settings
+                output += `set dterm_lpf1_dyn_min_hz = 0\n`;
+                output += `set dterm_lpf1_dyn_max_hz = 210\n`;
+                output += `set dterm_lpf1_static_hz = 112\n`;
+                output += `set dterm_lpf2_static_hz = 225\n`;
+                output += `set anti_gravity_gain = 120\n`;
+
+                // PIDs
+                if (this.config.pidValues && this.config.pidValues.length >= 3) {
+                    output += `set p_pitch = ${this.config.pidValues[1].p}\n`;
+                    output += `set i_pitch = ${this.config.pidValues[1].i}\n`;
+                    output += `set d_pitch = ${this.config.pidValues[1].d}\n`;
+                    if (this.config.pidValues.length > 3) {
+                        output += `set f_pitch = 147\n`; // Default F term
+                    }
+                    output += `set p_roll = ${this.config.pidValues[0].p}\n`;
+                    output += `set i_roll = ${this.config.pidValues[0].i}\n`;
+                    output += `set d_roll = ${this.config.pidValues[0].d}\n`;
+                    if (this.config.pidValues.length > 3) {
+                        output += `set f_roll = 135\n`; // Default F term
+                    }
+                    output += `set p_yaw = ${this.config.pidValues[2].p}\n`;
+                    output += `set i_yaw = ${this.config.pidValues[2].i}\n`;
+                    if (this.config.pidValues[2].d > 0) {
+                        output += `set d_yaw = ${this.config.pidValues[2].d}\n`;
+                    }
+                    output += `set f_yaw = 135\n`;
+                }
+
+                // Additional PID settings
+                output += `set feedforward_averaging = 2_POINT\n`;
+                output += `set feedforward_smooth_factor = 35\n`;
+                output += `set feedforward_jitter_factor = 4\n`;
+                output += `set feedforward_boost = 18\n`;
+
+                output += '\nprofile 1\nprofile 2\nprofile 3\n\n';
+                output += '# restore original profile selection\nprofile 0\n\n';
+
+                output += 'rateprofile 0\n\n';
+                output += '# rateprofile 0\n';
+                output += 'set rateprofile_name = device_export\n';
+
+                // Rates
+                if (this.config.rcTuning) {
+                    output += `set roll_rc_rate = ${this.config.rcTuning.rcRate}\n`;
+                    output += `set pitch_rc_rate = ${this.config.rcTuning.rcPitchRate || this.config.rcTuning.rcRate}\n`;
+                    output += `set yaw_rc_rate = ${this.config.rcTuning.rcYawRate || this.config.rcTuning.yawRate}\n`;
+                    output += `set roll_expo = ${this.config.rcTuning.rcExpo}\n`;
+                    output += `set pitch_expo = ${this.config.rcTuning.rcPitchExpo || this.config.rcTuning.rcExpo}\n`;
+                    output += `set yaw_expo = ${this.config.rcTuning.rcYawExpo || this.config.rcTuning.rcExpo}\n`;
+                    output += `set roll_srate = ${this.config.rcTuning.rollPitchRate}\n`;
+                    output += `set pitch_srate = ${this.config.rcTuning.rollPitchRate}\n`;
+                    output += `set yaw_srate = ${this.config.rcTuning.yawRate}\n`;
+                }
+
+                output += '\nrateprofile 1\nrateprofile 2\nrateprofile 3\n\n';
+                output += '# restore original rateprofile selection\nrateprofile 0\n\n';
+                output += '# save configuration\nsave\n';
+
+                return output;
+            }
+
+            updateStatus(message, type) {
+                const statusElement = document.getElementById(`deviceStatus${this.side}`);
+                statusElement.textContent = message;
+
+                // Reset all classes and add appropriate one
+                statusElement.className = statusElement.className.replace(/\b(error|connected|connecting|reading|disconnected)\b/g, '');
+                statusElement.style.color = type === 'error' ? '#ef4444' :
+                                         type === 'connected' ? '#10b981' :
+                                         type === 'connecting' || type === 'reading' ? '#f59e0b' : '#6b7280';
+            }
+
+            updateButtons(connected) {
+                document.getElementById(`connectBtn${this.side}`).disabled = connected;
+                document.getElementById(`disconnectBtn${this.side}`).disabled = !connected;
+                document.getElementById(`readConfigBtn${this.side}`).disabled = !connected;
+            }
+
+            sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        // Device connection instances
+        const deviceA = new DeviceConnection('A');
+        const deviceB = new DeviceConnection('B');
+
+        // Device connection functions
+        async function connectDevice(side) {
+            const device = side === 'A' ? deviceA : deviceB;
+            await device.connect();
+        }
+
+        async function disconnectDevice(side) {
+            const device = side === 'A' ? deviceA : deviceB;
+            await device.disconnect();
+        }
+
+        async function readDeviceConfig(side) {
+            const device = side === 'A' ? deviceA : deviceB;
+            const cliConfig = await device.readConfiguration();
+
+            if (cliConfig) {
+                // Populate the CLI text area with the generated configuration
+                const textArea = document.getElementById(`cliInput${side}`);
+                textArea.value = cliConfig;
+
+                // Parse the CLI config and load it
+                const tempParser = new BetaflightCLIParser();
+                const result = tempParser.parse(cliConfig);
+
+                const config = {
+                    type: 'device',
+                    title: `${device.config.fcVariant || 'Betaflight'} Device ${side}`,
+                    description: `Configuration read from connected flight controller`,
+                    settings: new Map(tempParser.settings),
+                    metadata: {
+                        settingsCount: result.settingsCount,
+                        board: device.config.boardName || device.config.boardIdentifier,
+                        version: device.config.fcVersion,
+                        variant: device.config.fcVariant
+                    }
+                };
+
+                if (side === 'A') {
+                    configA = config;
+                } else {
+                    configB = config;
+                }
+
+                updateUI();
+            }
+        }
+
         class BetaflightCLIParser {
             constructor() {
                 this.settings = new Map();
@@ -1099,15 +1778,18 @@ set i_pitch = 52
             const buttons = activeCard.querySelectorAll('.tab-btn');
 
             buttons.forEach((btn, index) => {
-                btn.classList.toggle('active', index === (tab === 'text' ? 0 : 1));
+                const tabOrder = ['text', 'preset', 'device'];
+                btn.classList.toggle('active', index === tabOrder.indexOf(tab));
             });
 
             // Smooth tab content transition
             const textTab = document.getElementById(`tab${side}-text`);
             const presetTab = document.getElementById(`tab${side}-preset`);
+            const deviceTab = document.getElementById(`tab${side}-device`);
 
             textTab.classList.toggle('active', tab === 'text');
             presetTab.classList.toggle('active', tab === 'preset');
+            deviceTab.classList.toggle('active', tab === 'device');
         }
 
         function loadConfigFromText(side) {
@@ -1588,6 +2270,10 @@ set i_pitch = 52
         function clearAll() {
             configA = null;
             configB = null;
+
+            // Disconnect devices
+            deviceA.disconnect();
+            deviceB.disconnect();
 
             // Clear inputs
             document.getElementById('cliInputA').value = '';
